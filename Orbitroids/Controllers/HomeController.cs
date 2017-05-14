@@ -13,6 +13,11 @@ namespace Orbitroids.Controllers
             return View();
         }
 
+        public ActionResult Game()
+        {
+            return View();
+        }
+
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";

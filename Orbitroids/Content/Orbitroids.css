@@ -1,0 +1,35 @@
+﻿.navbar, .navbar-inverse .navbar-brand, .navbar-inverse .navbar-nav > li > a, .navbar-inverse .btn-link {
+    color: rgb(256, 64, 128);
+}
+
+.navbar {
+    background: linear-gradient(to right, rgb(64, 0, 192), rgb(96, 0, 32));
+}
+
+.navbar-fixed-top {
+    border-width: 0 0 2px;
+}
+
+input, .navbar-inverse .navbar-brand:hover, .navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .btn-link:hover {
+    text-decoration: underline;
+    color: rgb(256, 256, 256);
+}
+
+input {
+    border: 2px solid rgb(64, 128, 128);
+    margin: 20px;
+    background-color: rgb(64, 192, 192);
+    color: rgb(0, 0, 0);
+}
+
+input:hover {
+    color: rgb(256, 256, 256);
+}
+
+input:focus {
+    outline: none;
+}
+
+fieldset {
+    margin-top: 40px;
+}
