@@ -42,3 +42,4 @@ orbs.gameParams['players'] = 1;
 
 orbs.selectGameType(orbs.gameParams['type']);
 orbs.selectPlayerNumber(orbs.gameParams['players']);
+
