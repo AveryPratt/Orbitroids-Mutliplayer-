@@ -2,11 +2,11 @@
 
 $(document).ready(function () {
     var game = $.connection.gameHub;
-    game.update = function () {
+    game.client.update = function () {
         $('canvas').css('background-color', 'red');
     };
     $(document).keydown(function () {
-        chat.submitInput();
+        game.server.submitInput();
     });
-    $.connection.start();
+    $.connection.hub.start();
 });
