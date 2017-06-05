@@ -26,7 +26,7 @@ orbs.selectGameType = function (number) {
 };
 
 orbs.selectPlayerNumber = function (number) {
-    orbs.gameParams['player'] = number;
+    orbs.gameParams['players'] = number;
 
     var buttons = $('.players');
     buttons.css('background-color', 'rgb(64, 192, 192)');

@@ -26,6 +26,19 @@ namespace Orbitroids.Tests.Controllers
         }
 
         [TestMethod]
+        public void Game()
+        {
+            // Arrange
+            HomeController controller = new HomeController();
+
+            // Act
+            ViewResult result = controller.Game() as ViewResult;
+
+            // Assert
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
         public void About()
         {
             // Arrange
@@ -48,7 +61,7 @@ namespace Orbitroids.Tests.Controllers
             ViewResult result = controller.Contact() as ViewResult;
 
             // Assert
-            Assert.IsNotNull(result);
+            Assert.AreEqual("Your contact page.", result.ViewBag.Message);
         }
     }
 }
