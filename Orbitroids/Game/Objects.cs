@@ -96,5 +96,52 @@ namespace Orbitroids.Game
                 new Shot(projection);
             }
         }
+
+        public class Shot : Orbital
+        {
+            public Shot(Vector vel, Color color = new Color())
+            {
+                this.Vel = vel;
+                this.Color = color;
+            }
+
+            public Color Color { get; set; }
+        }
+
+        public class Asteroid : Orbital
+        {
+            public Asteroid(Vector vel, int maxRadius, double roughness, double deltaRot = 0, double forwardAngle = 0)
+            {
+                this.Vel = vel;
+                this.MaxRadius = maxRadius;
+                this.Roughness = roughness;
+                this.DeltaRot = deltaRot;
+                this.ForwardAngle = forwardAngle;
+
+                var rand = new Random();
+
+                for (int i = 0; i < 1 + Math.Sqrt(maxRadius / unit); i++)
+                {
+                    this.Arms.Add(new Vector()
+                    {
+                        Length = maxRadius - rand.Next() * maxRadius * roughness
+                    });
+                }
+                this.AlignPoints();
+            }
+
+            public int MaxRadius { get; set; }
+            public double Roughness { get; set; }
+            public List<Vector> Arms { get; set; }
+
+            public void AlignPoints()
+            {
+                for (int i = 0; i < this.Arms.Count(); i++)
+                {
+                    var angle = this.ForwardAngle + i * 2 * Math.PI / this.Arms[i].Length;
+                    this.Arms[i] = VecCirc(angle, this.Arms[i].Length, this.Vel.Origin, this.DeltaRot);
+                }
+            }
+        }
     }
 }
