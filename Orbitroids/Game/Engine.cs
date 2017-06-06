@@ -7,6 +7,12 @@ namespace Orbitroids.Game
 {
     public class Engine
     {
+        public interface IMassive
+        {
+            int Mass { get; set; }
+            int Radius { get; set; }
+            Vector Vel { get; set; }
+        }
         public class Coordinate
         {
             public Coordinate(double x = 0, double y = 0)
@@ -19,7 +25,7 @@ namespace Orbitroids.Game
             public double Y { get; set; }
         }
 
-        public class Rotational
+        public abstract class Rotational
         {
             public Rotational(double forwardAngle = 0, double deltaRot = 0)
             {
@@ -136,10 +142,13 @@ namespace Orbitroids.Game
             public Vector Vel { get; set; }
             public Vector Accel { get; set; }
 
-            //public void ApplyGravity(Planet planet)
-            //{
-
-            //}
+            public void ApplyGravity(IMassive massive)
+            {
+                Vector distVec = VecCart(massive.Vel.Origin, this.Vel.Origin);
+                var force = massive.Mass / Math.Pow(distVec.Length, 2);
+                var forceVec = VecCirc(distVec.ForwardAngle, force, this.Vel.Origin);
+                this.Accel = AddVectors(this.Accel, forceVec);
+            }
             public void ApplyAccel(Vector accel)
             {
                 this.Accel = AddVectors(this.Accel, accel);
