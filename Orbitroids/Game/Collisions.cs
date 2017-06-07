@@ -9,6 +9,36 @@ namespace Orbitroids.Game
 {
     public static class Collisions
     {
+        public static bool CheckShotAsteroidCollision(Shot shot, Asteroid asteroid)
+        {
+            return checkCoordinatePolygonCollision(shot.Vel.Origin, asteroid);
+        }
+
+        public static bool CheckShotShipCollision(Shot shot, Ship ship)
+        {
+            return checkCoordinatePolygonCollision(shot.Vel.Origin, ship);
+        }
+
+        public static bool CheckShotPlanetCollision(Shot shot, Planet planet)
+        {
+            return checkCoordinateCircleCollision(shot.Vel.Origin, planet);
+        }
+
+        public static bool CheckAsteroidShipCollision(Asteroid asteroid, Ship ship)
+        {
+            return checkMultiplePolygonCollision(asteroid, ship);
+        }
+
+        public static bool CheckAsteroidPlanetCollision(Asteroid asteroid, Planet planet)
+        {
+            return checkPolygonCircleCollision(asteroid, planet);
+        }
+
+        public static bool CheckShipPlanetCollision(Ship ship, Planet planet)
+        {
+            return checkPolygonCircleCollision(ship, planet);
+        }
+
         private static bool checkCircleCircleCollision(ICircular circRed, ICircular circBlue)
         {
             Vector distVec = VecCart(circRed.Vel.Origin, circBlue.Vel.Origin);
