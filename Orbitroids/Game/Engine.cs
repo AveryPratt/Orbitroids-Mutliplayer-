@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Web;
 
@@ -7,12 +8,27 @@ namespace Orbitroids.Game
 {
     public class Engine
     {
-        public interface IMassive
+        public interface IMovable
         {
-            int Mass { get; set; }
-            int Radius { get; set; }
             Vector Vel { get; set; }
         }
+        public interface IMassive : IMovable
+        {
+            int Mass { get; set; }
+        }
+
+        public interface ICircular : IMovable
+        {
+            int Radius { get; set; }
+        }
+
+        public interface IPolygon : ICircular
+        {
+            IEnumerable<Vector> Arms { get; set; }
+
+            IEnumerable<Vector> ConstructSides();
+        }
+
         public class Coordinate
         {
             public Coordinate(double x = 0, double y = 0)
