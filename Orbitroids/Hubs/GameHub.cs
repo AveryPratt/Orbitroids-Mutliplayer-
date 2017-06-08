@@ -1,13 +1,19 @@
 ﻿using Microsoft.AspNet.SignalR;
+using Orbitroids.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Web;
 
 namespace Orbitroids.Hubs
 {
     public class GameHub : Hub
     {
+        public GameHub()
+        {
+
+        }
         public void FlashColor()
         {
             Clients.All.flashColor();

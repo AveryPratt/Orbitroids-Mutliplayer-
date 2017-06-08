@@ -1,42 +1,137 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using static Orbitroids.Game.Engine;
 using static Orbitroids.Game.Objects;
+using static Orbitroids.Game.Physics;
 
 namespace Orbitroids.Game
 {
     public static class Collisions
     {
-        public static bool CheckShotAsteroidCollision(Shot shot, Asteroid asteroid)
+        public delegate void DestroyShots(IEnumerable<Shot> shots);
+        public delegate void DestroyAsteroids(IEnumerable<Asteroid> asteroids);
+        public delegate void DestroyShips(IEnumerable<Ship> ships);
+
+        public static void HandleCollisions(IEnumerable<Shot> shots, IEnumerable<Asteroid> asteroids, IEnumerable<Planet> planets, IEnumerable<Ship> ships, DestroyShots destroyShots, DestroyShips destroyShips, DestroyAsteroids destroyAsteroids)
         {
-            return checkCoordinatePolygonCollision(shot.Vel.Origin, asteroid);
+            CheckShotAsteroidCollision(shots, asteroids, destroyShots, destroyAsteroids);
+            CheckShotShipCollision(shots, ships, destroyShots, destroyShips);
+            CheckShotPlanetCollision(shots, planets, destroyShots);
+            CheckAsteroidShipCollision(asteroids, ships, destroyAsteroids);
+            CheckAsteroidPlanetCollision(asteroids, planets, destroyAsteroids);
+            CheckShipPlanetCollision(ships, planets, destroyShips);
+        }
+        public static void CheckShotAsteroidCollision(IEnumerable<Shot> shots, IEnumerable<Asteroid> asteroids, DestroyShots destroyShots, DestroyAsteroids destroyAsteroids) // 50 * 30 = 1500 / 2082
+        {
+            List<Shot> doomedShots = new List<Shot>();
+            List<Asteroid> doomedAsteroids = new List<Asteroid>();
+            foreach (Shot shot in shots)
+            {
+                foreach (Asteroid asteroid in asteroids)
+                {
+                    if (checkCoordinatePolygonCollision(shot.Vel.Origin, asteroid))
+                    {
+                        doomedShots.Add(shot);
+                        doomedAsteroids.Add(asteroid);
+                    }
+                }
+            }
+            destroyShots(doomedShots);
+            destroyAsteroids(doomedAsteroids);
         }
 
-        public static bool CheckShotShipCollision(Shot shot, Ship ship)
+        public static void CheckShotShipCollision(IEnumerable<Shot> shots, IEnumerable<Ship> ships, DestroyShots destroyShots, DestroyShips destroyShips) // 50 * 4 = 200 / 2082
         {
-            return checkCoordinatePolygonCollision(shot.Vel.Origin, ship);
+            List<Shot> doomedShots = new List<Shot>();
+            List<Ship> doomedShips = new List<Ship>();
+            foreach (Shot shot in shots)
+            {
+                foreach (Ship ship in ships)
+                {
+                    if (checkCoordinatePolygonCollision(shot.Vel.Origin, ship))
+                    {
+                        doomedShots.Add(shot);
+                        doomedShips.Add(ship);
+                    }
+                }
+            }
+            destroyShots(doomedShots);
+            destroyShips(doomedShips);
         }
 
-        public static bool CheckShotPlanetCollision(Shot shot, Planet planet)
+        public static void CheckShotPlanetCollision(IEnumerable<Shot> shots, IEnumerable<Planet> planets, DestroyShots destroyShots) // 50 * 3 = 150 / 2082
         {
-            return checkCoordinateCircleCollision(shot.Vel.Origin, planet);
+            List<Shot> doomedShots = new List<Shot>();
+            foreach (Shot shot in shots)
+            {
+                foreach (Planet planet in planets)
+                {
+                    if (checkCoordinateCircleCollision(shot.Vel.Origin, planet))
+                    {
+                        doomedShots.Add(shot);
+                    }
+                }
+            }
+            destroyShots(doomedShots);
         }
 
-        public static bool CheckAsteroidShipCollision(Asteroid asteroid, Ship ship)
+        public static void CheckAsteroidShipCollision(IEnumerable<Asteroid> asteroids, IEnumerable<Ship> ships, DestroyAsteroids destroyAsteroids) // 30 * 4 = 120 / 2082
         {
-            return checkMultiplePolygonCollision(asteroid, ship);
+            List<Asteroid> doomedAsteroids = new List<Asteroid>();
+            List<Ship> doomedShips = new List<Ship>();
+            foreach (Asteroid asteroid in asteroids)
+            {
+                foreach (Ship ship in ships)
+                {
+                    if (checkMultiplePolygonCollision(asteroid, ship))
+                    {
+                        doomedAsteroids.Add(asteroid);
+                        doomedShips.Add(ship);
+                    }
+                }
+            }
+            destroyAsteroids(doomedAsteroids);
         }
 
-        public static bool CheckAsteroidPlanetCollision(Asteroid asteroid, Planet planet)
+        public static void CheckAsteroidPlanetCollision(IEnumerable<Asteroid> asteroids, IEnumerable<Planet> planets, DestroyAsteroids destroyAsteroids) // 30 * 3 = 90 / 2082
         {
-            return checkPolygonCircleCollision(asteroid, planet);
+            List<Asteroid> doomedAsteroids = new List<Asteroid>();
+            foreach (Asteroid asteroid in asteroids)
+            {
+                foreach (Planet planet in planets)
+                {
+                    if (checkPolygonCircleCollision(asteroid, planet))
+                    {
+                        doomedAsteroids.Add(asteroid);
+                    }
+                }
+            }
+            destroyAsteroids(doomedAsteroids);
         }
 
-        public static bool CheckShipPlanetCollision(Ship ship, Planet planet)
+        public static void CheckShipPlanetCollision(IEnumerable<Ship> ships, IEnumerable<Planet> planets, DestroyShips destroyShips) // 4 * 3 = 12 / 2082
         {
-            return checkPolygonCircleCollision(ship, planet);
+            List<Ship> doomedShips = new List<Ship>();
+            foreach (Ship ship in ships)
+            {
+                foreach (Planet planet in planets)
+                {
+                    if (checkPolygonCircleCollision(ship, planet))
+                    {
+                        doomedShips.Add(ship);
+                    }
+                }
+            }
+            destroyShips(doomedShips);
+        }
+
+        [Obsolete("Method will always return false. This requires a system barycenter and a function to calculate escape velocity to be implemented.")]
+        private static bool checkObjectEscaped(IMovable obj, int systemMass)
+        {
+            if (obj.Vel.Length > GetEscapeVelocity(obj, systemMass))
+                return true;
+            return false;
         }
 
         private static bool checkCircleCircleCollision(ICircular circRed, ICircular circBlue)
@@ -65,9 +160,11 @@ namespace Orbitroids.Game
 
         private static bool checkMultiplePolygonCollision(IPolygon polyRed, IPolygon polyBlue)
         {
-            // modified from solution: https://gamedev.stackexchange.com/questions/26004/how-to-detect-2d-line-on-line-collision
+            if (VecCart(polyRed.Vel.Origin, polyBlue.Vel.Origin).Length > polyRed.Radius + polyBlue.Radius)
+                return false;
 
-            bool collided = false;
+            // modified from solution: https://gamedev.stackexchange.com/questions/26004/how-to-detect-2d-line-on-line-collision
+            
             IEnumerable<Vector> red = polyRed.ConstructSides();
             IEnumerable<Vector> blue = polyBlue.ConstructSides();
 
@@ -86,14 +183,17 @@ namespace Orbitroids.Game
                     double y = numerator2 / denominator;
 
                     if ((x >= 0 && x <= 1) && (y >= 0 && y <= 1))
-                        collided = true;
+                        return true;
                 }
             }
-            return collided;
+            return true;
         }
 
         private static bool checkCoordinatePolygonCollision(Coordinate coord, IPolygon polygon)
         {
+            if(VecCart(coord, polygon.Vel.Origin).Length > polygon.Radius)
+                return false;
+
             Vector[] arms = polygon.Arms.ToArray();
             List<double> angles = new List<double>();
             double temp;
@@ -116,6 +216,7 @@ namespace Orbitroids.Game
                 total += diff;
                 temp = angles[i];
             }
+
             if (Math.Round(total) == 0)
                 return false;
             return true;

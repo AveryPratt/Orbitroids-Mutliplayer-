@@ -209,6 +209,8 @@
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Game\Collisions.cs" />
     <Compile Include="Game\Engine.cs" />
+    <Compile Include="Game\Game.cs" />
+    <Compile Include="Game\Levels.cs" />
     <Compile Include="Game\Objects.cs" />
     <Compile Include="Game\Physics.cs" />
     <Compile Include="Global.asax.cs">
