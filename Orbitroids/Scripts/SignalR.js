@@ -2,14 +2,14 @@
 
 $(document).ready(function () {
     var game = $.connection.gameHub;
-    game.client.flashColor = function () {
-        var letters = '0123456789ABCDEF';
-        var color = '#';
-        for (var i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        $('canvas').css('background-color', color);
-    };
+    //game.client.flashColor = function () {
+    //    var letters = '0123456789ABCDEF';
+    //    var color = '#';
+    //    for (var i = 0; i < 6; i++) {
+    //        color += letters[Math.floor(Math.random() * 16)];
+    //    }
+    //    $('canvas').css('background-color', color);
+    //};
     game.client.log = function (message) {
         console.log(message);
     }

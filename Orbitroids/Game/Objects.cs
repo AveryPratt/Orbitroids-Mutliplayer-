@@ -38,7 +38,7 @@ namespace Orbitroids.Game
                 this.Color = color;
 
                 this.Burning = false;
-                this.DampenRot = false;
+                this.RotPower = .1;
                 this.DampenBurn = false;
                 this.Loaded = false;
                 this.Exploded = false;
@@ -49,6 +49,7 @@ namespace Orbitroids.Game
                 this.alignPoints();
             }
 
+            public double RotPower { get; set; }
             public int Radius { get; set; }
             public Color Color { get; set; }
             public bool Burning { get; set; }
@@ -80,12 +81,12 @@ namespace Orbitroids.Game
                 arms[2] = VecCirc(this.ForwardAngle - Math.PI, this.MaxRadius, this.Vel.Origin); // rear
                 arms[3] = VecCirc(this.ForwardAngle - 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin); // right
             }
-            new public void Rotate(double accelRot = 0)
+            new public void Rotate()
             {
-                if ((accelRot < 0 && this.DeltaRot > -.2) || 
-                    (accelRot > 0 && this.DeltaRot < .2))
+                if ((this.AccelRot < 0 && this.DeltaRot > -.2) || 
+                    (this.AccelRot > 0 && this.DeltaRot < .2))
                 {
-                    this.DeltaRot += accelRot;
+                    this.DeltaRot += this.AccelRot;
                 }
                 this.ForwardAngle += this.DeltaRot;
             }

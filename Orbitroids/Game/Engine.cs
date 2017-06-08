@@ -60,6 +60,7 @@ namespace Orbitroids.Game
                     this.RefineForwardAngle();
                 }
             }
+            public double AccelRot { get; set; }
             public double DeltaRot { get; set; }
 
             public void Rotate(double accelRot = 0)

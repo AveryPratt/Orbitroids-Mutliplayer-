@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using static Orbitroids.Game.Objects;
+using static Orbitroids.Game.Engine;
 
 namespace Orbitroids.Game
 {
@@ -10,7 +11,7 @@ namespace Orbitroids.Game
     {
         public GameInstance(Level level)
         {
-
+            this.Ships.Add(new Ship(VecCirc()));
         }
         public List<Ship> Ships { get; set; }
         public List<Shot> Shots { get; set; }
