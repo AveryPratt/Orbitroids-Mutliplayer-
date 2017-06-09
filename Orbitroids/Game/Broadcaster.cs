@@ -12,36 +12,29 @@ namespace Orbitroids.Game
     public class Broadcaster
     {
         private readonly static Lazy<Broadcaster> instance = new Lazy<Broadcaster>(() => new Broadcaster());
-        private readonly TimeSpan BroadcastInterval = TimeSpan.FromMilliseconds(40);
+        private readonly TimeSpan broadcastInterval = TimeSpan.FromMilliseconds(16); // 62.5 fps
         private readonly IHubContext hubContext;
         private Level level;
         private Timer broadcastLoop;
-        private GameInstance model;
-        private bool modelUpdated;
+        private Engine model;
         public Broadcaster()
         {
             // Save our hub context so we can easily use it 
             // to send to its connected clients
             hubContext = GlobalHost.ConnectionManager.GetHubContext<GameHub>();
-            model = new GameInstance(level);
-            modelUpdated = false;
+            model = new Engine(level);
             // Start the broadcast loop
             broadcastLoop = new Timer(
-                BroadcastShape,
+                RenderFrame,
                 null,
-                BroadcastInterval,
-                BroadcastInterval);
+                broadcastInterval,
+                broadcastInterval);
         }
-        public void BroadcastShape(object state)
+
+        public void RenderFrame(object state)
         {
-            // No need to send anything if our model hasn't changed
-            if (modelUpdated)
-            {
-                // This is how we can access the Clients property 
-                // in a static hub method or outside of the hub entirely
-                hubContext.Clients.All.updateShape(model);
-                modelUpdated = false;
-            }
+            model.Update();
+            hubContext.Clients.All.renderFrame(model);
         }
 
         public void Enter(dynamic caller)

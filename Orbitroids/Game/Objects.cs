@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
-using static Orbitroids.Game.Engine;
+using static Orbitroids.Game.Geometry;
 
 namespace Orbitroids.Game
 {
@@ -11,6 +12,7 @@ namespace Orbitroids.Game
     {
         public const double unit = 1;
 
+        [DataContract]
         public class Planet : Orbital, ICircular, IMassive
         {
             public Planet(int mass, int radius, Vector vel = null, Color color = new Color(), bool atmosphere = false, double forwardAngle = 0, double deltaRot = 0)
@@ -23,13 +25,16 @@ namespace Orbitroids.Game
                 this.ForwardAngle = forwardAngle;
                 this.DeltaRot = deltaRot;
             }
-
+            
             public int Mass { get; set; }
             public int Radius { get; set; }
+            [DataMember]
             public Color Color { get; set; }
+            [DataMember]
             public bool IsAtmosphere { get; set; }
         }
 
+        [DataContract]
         public class Ship : Orbital, IPolygon
         {
             public Ship(Vector vel, Color color = new Color(), double forwardAngle = 0, double deltaRot = 0)
@@ -45,12 +50,14 @@ namespace Orbitroids.Game
                 this.Destroyed = false;
                 this.TrueAnomaly = new Vector();
                 this.Accel = VecCirc();
+                this.Arms = new Vector[4];
 
                 this.alignPoints();
             }
 
             public double RotPower { get; set; }
             public int Radius { get; set; }
+            [DataMember]
             public Color Color { get; set; }
             public bool Burning { get; set; }
             public bool DampenRot { get; set; }
@@ -78,10 +85,10 @@ namespace Orbitroids.Game
                 Vector[] arms = this.Arms.ToArray();
                 arms[0] = VecCirc(this.ForwardAngle, this.MaxRadius, this.Vel.Origin); // nose
                 arms[1] = VecCirc(this.ForwardAngle + 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin); // left
-                arms[2] = VecCirc(this.ForwardAngle - Math.PI, this.MaxRadius, this.Vel.Origin); // rear
+                arms[2] = VecCirc(this.ForwardAngle - Math.PI, 0, this.Vel.Origin); // rear
                 arms[3] = VecCirc(this.ForwardAngle - 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin); // right
             }
-            new public void Rotate()
+            public void Rotate()
             {
                 if ((this.AccelRot < 0 && this.DeltaRot > -.2) || 
                     (this.AccelRot > 0 && this.DeltaRot < .2))
@@ -109,6 +116,7 @@ namespace Orbitroids.Game
             }
         }
 
+        [DataContract]
         public class Shot : Orbital
         {
             public Shot(Vector vel, Color color = new Color())
@@ -117,9 +125,11 @@ namespace Orbitroids.Game
                 this.Color = color;
             }
 
+            [DataMember]
             public Color Color { get; set; }
         }
 
+        [DataContract]
         public class Asteroid : Orbital, IPolygon
         {
             public Asteroid(Vector vel, int radius, double roughness, double deltaRot = 0, double forwardAngle = 0)
@@ -145,6 +155,7 @@ namespace Orbitroids.Game
 
             public int Radius { get; set; }
             public double Roughness { get; set; }
+            [DataMember]
             public IEnumerable<Vector> Arms { get; set; }
             
             public IEnumerable<Vector> ConstructSides()
