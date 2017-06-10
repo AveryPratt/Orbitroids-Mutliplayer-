@@ -2,19 +2,46 @@
 
 $(document).ready(function () {
     var game = $.connection.gameHub;
-    game.client.flashColor = function () {
-        var letters = '0123456789ABCDEF';
-        var color = '#';
-        for (var i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        $('canvas').css('background-color', color);
-    };
+    var canvas = document.getElementById('gamescreen');
+    var ctx = canvas.getContext('2d');
+
     game.client.log = function (message) {
         console.log(message);
     };
+
     game.client.renderFrame = function (model) {
-        console.log(model);
+        var ship = model.Ships[0];
+        var center = {
+            x: ship.Vel.Origin.X + 50,
+            y: ship.Vel.Origin.Y + 50
+        };
+        var nose = {
+            x: ship.Arms[0].Head.X + 50,
+            y: ship.Arms[0].Head.Y + 50
+        };
+        var right = {
+            x: ship.Arms[1].Head.X + 50,
+            y: ship.Arms[1].Head.Y + 50
+        };
+        var left = {
+            x: ship.Arms[3].Head.X + 50,
+            y: ship.Arms[3].Head.Y + 50
+        };
+        //ctx.strokeStyle = 'rgba(' + ship.Color + ')';
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(nose.x, nose.y);
+        ctx.lineTo(right.x, right.y);
+        ctx.lineTo(center.x, center.y);
+        ctx.lineTo(left.x, left.y);
+        ctx.closePath();
+        ctx.stroke();
+        console.log("Center: " +
+            ship.Vel.Origin.X + ", " + ship.Vel.Origin.Y + " | Nose: " +
+            ship.Arms[0].Head.X + ", " + ship.Arms[0].Head.Y + " | Right: " +
+            ship.Arms[1].Head.X + ", " + ship.Arms[1].Head.Y + " | Left: " +
+            ship.Arms[3].Head.X + ", " + ship.Arms[3].Head.Y);
     }
 
     $(document).keydown(function (event) {
@@ -50,7 +77,6 @@ $(document).ready(function () {
             default:
                 break;
         }
-        //game.server.flashColor();
     });
 
     $(document).keyup(function (event) {
@@ -78,5 +104,6 @@ $(document).ready(function () {
                 break;
         }
     });
+
     $.connection.hub.start();
 });

@@ -47,7 +47,7 @@ namespace Orbitroids.Game
 
         public void Shoot(dynamic caller)
         {
-            model.Ships[0].Shoot();
+            model.Ships[0].Loaded = true;
         }
 
         public void Burn(dynamic caller)

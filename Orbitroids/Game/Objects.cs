@@ -10,17 +10,19 @@ namespace Orbitroids.Game
 {
     public class Objects
     {
-        public const double unit = 1;
-
-        [DataContract]
-        public class Planet : Orbital, ICircular, IMassive
+        interface IColorable
         {
-            public Planet(int mass, int radius, Vector vel = null, Color color = new Color(), bool atmosphere = false, double forwardAngle = 0, double deltaRot = 0)
+            Color Color { get; set; }
+        }
+        
+        public class Planet : Orbital, ICircular, IMassive, IColorable
+        {
+            public Planet(int mass, int radius, Vector vel = null, Color? color = null, bool atmosphere = false, double forwardAngle = 0, double deltaRot = 0)
             {
                 this.Mass = mass;
                 this.Radius = radius;
                 this.Vel = vel ?? new Vector();
-                this.Color = color;
+                this.Color = color ?? Color.FromArgb(1, 0, 0, 0);
                 this.IsAtmosphere = atmosphere;
                 this.ForwardAngle = forwardAngle;
                 this.DeltaRot = deltaRot;
@@ -28,42 +30,55 @@ namespace Orbitroids.Game
             
             public int Mass { get; set; }
             public int Radius { get; set; }
-            [DataMember]
             public Color Color { get; set; }
-            [DataMember]
             public bool IsAtmosphere { get; set; }
         }
-
-        [DataContract]
-        public class Ship : Orbital, IPolygon
+        
+        public class Ship : Orbital, IPolygon, IColorable
         {
-            public Ship(Vector vel, Color color = new Color(), double forwardAngle = 0, double deltaRot = 0)
+            public Ship(Vector vel, Color? color = null, double forwardAngle = 0, double deltaRot = 0)
             {
                 this.Vel = vel;
-                this.Color = color;
+                this.Color = color ?? Color.FromArgb(1, 0, 0, 0);
 
                 this.Burning = false;
                 this.RotPower = .1;
                 this.DampenBurn = false;
                 this.Loaded = false;
-                this.Exploded = false;
                 this.Destroyed = false;
                 this.TrueAnomaly = new Vector();
                 this.Accel = VecCirc();
-                this.Arms = new Vector[4];
+                this.MaxRadius = 10;
 
                 this.alignPoints();
             }
 
+            new public double ForwardAngle
+            {
+                get
+                {
+                    return this.forwardAngle;
+                }
+                set
+                {
+                    while (value >= Math.PI * 2)
+                        value -= Math.PI * 2;
+                    while (value < 0)
+                        value += Math.PI * 2;
+                    this.forwardAngle = value;
+                }
+            }
+            
+            new public Vector Vel { get; set; }
             public double RotPower { get; set; }
+            public double BurnPower { get; set; }
+            public double DampenBurnPower { get; set; }
             public int Radius { get; set; }
-            [DataMember]
             public Color Color { get; set; }
             public bool Burning { get; set; }
             public bool DampenRot { get; set; }
             public bool DampenBurn { get; set; }
             public bool Loaded { get; set; }
-            public bool Exploded { get; set; }
             public bool Destroyed { get; set; }
             public int MaxRadius { get; set; }
             public IEnumerable<Vector> Arms { get; set; }
@@ -82,11 +97,13 @@ namespace Orbitroids.Game
             }
             private void alignPoints()
             {
-                Vector[] arms = this.Arms.ToArray();
-                arms[0] = VecCirc(this.ForwardAngle, this.MaxRadius, this.Vel.Origin); // nose
-                arms[1] = VecCirc(this.ForwardAngle + 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin); // left
-                arms[2] = VecCirc(this.ForwardAngle - Math.PI, 0, this.Vel.Origin); // rear
-                arms[3] = VecCirc(this.ForwardAngle - 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin); // right
+                this.Arms = new Vector[4]
+                {
+                    VecCirc(this.ForwardAngle, this.MaxRadius, this.Vel.Origin),
+                    VecCirc(this.ForwardAngle + 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin),
+                    VecCirc(this.ForwardAngle - Math.PI, 0, this.Vel.Origin),
+                    VecCirc(this.ForwardAngle - 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin)
+                };
             }
             public void Rotate()
             {
@@ -109,40 +126,38 @@ namespace Orbitroids.Game
             }
             public void Shoot()
             {
-                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, .5 * unit));
-                var projection = VecCirc(this.ForwardAngle, 2.5 * unit, this.Arms.ToArray()[0].Head);
+                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, .5));
+                var projection = VecCirc(this.ForwardAngle, 2.5, this.Arms.ToArray()[0].Head);
                 projection = AddVectors(projection, this.Vel);
                 new Shot(projection);
             }
         }
-
-        [DataContract]
-        public class Shot : Orbital
+        
+        public class Shot : Orbital, IColorable
         {
-            public Shot(Vector vel, Color color = new Color())
+            public Shot(Vector vel, Color? color = null)
             {
                 this.Vel = vel;
-                this.Color = color;
+                this.Color = color ?? Color.FromArgb(1, 0, 0, 0);
             }
-
-            [DataMember]
+            
             public Color Color { get; set; }
         }
-
-        [DataContract]
-        public class Asteroid : Orbital, IPolygon
+        
+        public class Asteroid : Orbital, IPolygon, IColorable
         {
-            public Asteroid(Vector vel, int radius, double roughness, double deltaRot = 0, double forwardAngle = 0)
+            public Asteroid(Vector vel, int radius, double roughness, Color? color = null, double deltaRot = 0, double forwardAngle = 0)
             {
                 this.Vel = vel;
                 this.Radius = radius;
                 this.Roughness = roughness;
                 this.DeltaRot = deltaRot;
                 this.ForwardAngle = forwardAngle;
+                this.Color = color ?? Color.FromArgb(1, 0, 0, 0);
 
                 var rand = new Random();
                 var arms = new List<Vector>();
-                for (int i = 0; i < 1 + Math.Sqrt(radius / unit); i++)
+                for (int i = 0; i < 1 + Math.Sqrt(radius); i++)
                 {
                     arms.Add(new Vector()
                     {
@@ -153,9 +168,9 @@ namespace Orbitroids.Game
                 this.AlignPoints();
             }
 
+            public Color Color { get; set; }
             public int Radius { get; set; }
             public double Roughness { get; set; }
-            [DataMember]
             public IEnumerable<Vector> Arms { get; set; }
             
             public IEnumerable<Vector> ConstructSides()
@@ -174,7 +189,7 @@ namespace Orbitroids.Game
                 var arms = this.Arms.ToArray();
                 for (int i = 0; i < this.Arms.Count(); i++)
                 {
-                    var angle = this.ForwardAngle + i * 2 * Math.PI / arms[i].Length;
+                    var angle = this.ForwardAngle + i * 2 * arms[i].Length == 0 ? Double.PositiveInfinity : Math.PI / arms[i].Length;
                     arms[i] = VecCirc(angle, arms[i].Length, this.Vel.Origin, this.DeltaRot);
                 }
             }

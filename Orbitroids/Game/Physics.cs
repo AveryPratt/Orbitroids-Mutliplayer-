@@ -11,7 +11,8 @@ namespace Orbitroids.Game
         public static double GetEscapeVelocity(IMovable obj, int systemMass)
         {
             // V(esc) = 2 * G * M / r
-            return systemMass / VecCart(obj.Vel.Origin).Length;
+            double length = VecCart(obj.Vel.Origin).Length;
+            return length == 0 ? Double.PositiveInfinity : systemMass / length;
         }
     }
 }

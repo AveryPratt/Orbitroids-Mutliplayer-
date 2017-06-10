@@ -17,11 +17,6 @@ namespace Orbitroids.Hubs
             broadcaster = caster;
         }
 
-        //public void FlashColor()
-        //{
-        //    Clients.All.flashColor();
-        //}
-
         public void Enter()
         {
             broadcaster.Enter(Clients.Caller);
