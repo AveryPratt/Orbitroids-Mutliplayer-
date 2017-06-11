@@ -170,9 +170,7 @@ namespace Orbitroids.Game
             }
             public void ApplyMotion()
             {
-                // converts acceleration to velocity
                 this.Vel = AddVectors(this.Vel, this.Accel);
-                // converts velocity to distance
                 this.Vel = VecDelta(this.Vel.Delta, this.Vel.Head, this.Vel.DeltaRot);
             }
         }
