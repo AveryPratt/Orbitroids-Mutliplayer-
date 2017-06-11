@@ -104,8 +104,8 @@ namespace Orbitroids.Game
             vector.Delta = new Coordinate(head.X - origin.X, head.Y - origin.Y);
             vector.Length = Math.Sqrt(Math.Pow(vector.Delta.X, 2) + Math.Pow(vector.Delta.Y, 2));
             var unitDelta = new Coordinate(
-                vector.Length == 0 ? Double.PositiveInfinity : vector.Delta.X / vector.Length,
-                vector.Length == 0 ? Double.PositiveInfinity : vector.Delta.Y / vector.Length
+                vector.Length == 0 ? 0 : vector.Delta.X / vector.Length,
+                vector.Length == 0 ? 0 : vector.Delta.Y / vector.Length
                 );
             vector.ForwardAngle = unitDelta.Y < 0 ? Math.PI - Math.Asin(unitDelta.X) : Math.Asin(unitDelta.X);
 
@@ -121,8 +121,8 @@ namespace Orbitroids.Game
             vector.Head = new Coordinate(origin.X + delta.X, origin.Y + delta.Y);
             vector.Length = Math.Sqrt(Math.Pow(delta.X, 2) + Math.Pow(delta.Y, 2));
             Coordinate unitDelta = new Coordinate(
-                vector.Length == 0 ? Double.PositiveInfinity : delta.X / vector.Length,
-                vector.Length == 0 ? Double.PositiveInfinity : delta.Y / vector.Length
+                vector.Length == 0 ? 0 : delta.X / vector.Length,
+                vector.Length == 0 ? 0 : delta.Y / vector.Length
                 );
             vector.ForwardAngle = unitDelta.Y < 0 ? Math.PI - Math.Asin(unitDelta.X) : Math.Asin(unitDelta.X);
 
@@ -164,7 +164,7 @@ namespace Orbitroids.Game
             {
                 Vector distVec = VecCart(massive.Vel.Origin, this.Vel.Origin);
                 double distanceSquared = Math.Pow(distVec.Length, 2);
-                double force = distanceSquared == 0 ? Double.PositiveInfinity : massive.Mass / distanceSquared;
+                double force = distanceSquared == 0 ? 0 : massive.Mass / distanceSquared;
                 Vector forceVec = VecCirc(distVec.ForwardAngle, force, this.Vel.Origin);
                 this.Accel = AddVectors(this.Accel, forceVec);
             }

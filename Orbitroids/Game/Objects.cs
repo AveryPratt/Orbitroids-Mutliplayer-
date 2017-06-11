@@ -189,7 +189,7 @@ namespace Orbitroids.Game
                 var arms = this.Arms.ToArray();
                 for (int i = 0; i < this.Arms.Count(); i++)
                 {
-                    var angle = this.ForwardAngle + i * 2 * arms[i].Length == 0 ? Double.PositiveInfinity : Math.PI / arms[i].Length;
+                    var angle = this.ForwardAngle + i * 2 * arms[i].Length == 0 ? 0 : Math.PI / arms[i].Length;
                     arms[i] = VecCirc(angle, arms[i].Length, this.Vel.Origin, this.DeltaRot);
                 }
             }

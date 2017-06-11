@@ -12,7 +12,7 @@ namespace Orbitroids.Game
         {
             // V(esc) = 2 * G * M / r
             double length = VecCart(obj.Vel.Origin).Length;
-            return length == 0 ? Double.PositiveInfinity : systemMass / length;
+            return length == 0 ? 0 : systemMass / length;
         }
     }
 }
