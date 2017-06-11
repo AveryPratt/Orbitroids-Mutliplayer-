@@ -11,7 +11,10 @@ namespace Orbitroids.Hubs
     public class GameHub : Hub
     {
         private Broadcaster broadcaster;
-        public GameHub() : this(Broadcaster.Instance) { }
+        public GameHub() : this(Broadcaster.Instance)
+        {
+
+        }
         public GameHub(Broadcaster caster)
         {
             broadcaster = caster;

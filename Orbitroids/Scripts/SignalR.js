@@ -42,39 +42,39 @@ $(document).ready(function () {
         switch (event.keyCode) {
             case 13: // enter
                 event.preventDefault();
-                game.server.enter();
+                orbs.game.server.enter();
                 break;
             case 80: // p
                 event.preventDefault();
-                game.server.pause();
+                orbs.game.server.pause();
                 break;
             case 32: // space
                 event.preventDefault();
-                game.server.shoot();
+                orbs.game.server.shoot();
                 break;
             case 38: // up
             case 87: // w
                 event.preventDefault();
-                game.server.burn();
+                orbs.game.server.burn();
                 break;
             case 40: // down
             case 83: // s
                 event.preventDefault();
-                game.server.slowBurn();
+                orbs.game.server.slowBurn();
                 break;
             case 37: // left
             case 65: // a
                 event.preventDefault();
-                game.server.rotate("right");
+                orbs.game.server.rotate("right");
                 break;
             case 39: // right
             case 68: // d
                 event.preventDefault();
-                game.server.rotate("left");
+                orbs.game.server.rotate("left");
                 break;
             case 16: // shift
                 event.preventDefault();
-                game.server.dampenControls();
+                orbs.game.server.dampenControls();
                 break;
             default:
                 break;
@@ -86,26 +86,26 @@ $(document).ready(function () {
             case 38: // up
             case 87: // w
                 event.preventDefault();
-                game.server.releaseBurn();
+                orbs.game.server.releaseBurn();
                 break;
             case 40: // down
             case 83: // s
                 event.preventDefault();
-                game.server.releaseSlowBurn();
+                orbs.game.server.releaseSlowBurn();
                 break;
             case 37: // left
             case 65: // a
                 event.preventDefault();
-                game.server.releaseRotate("right");
+                orbs.game.server.releaseRotate("right");
                 break;
             case 39: // right
             case 68: // d
                 event.preventDefault();
-                game.server.releaseRotate("left");
+                orbs.game.server.releaseRotate("left");
                 break;
             case 16: // shift
                 event.preventDefault();
-                game.server.releaseDampenControls();
+                orbs.game.server.releaseDampenControls();
                 break;
             default:
                 break;

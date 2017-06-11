@@ -160,7 +160,7 @@ namespace Orbitroids.Game
             {
                 this.Loaded = false;
                 this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, 1));
-                var projection = VecCirc(this.ForwardAngle, 2.5, this.Arms.ToArray()[0].Head);
+                Vector projection = VecCirc(this.ForwardAngle, 2.5, this.Arms.ToArray()[0].Head);
                 projection = AddVectors(projection, this.Vel);
                 return new Shot(projection);
             }
@@ -193,14 +193,14 @@ namespace Orbitroids.Game
                 this.ForwardAngle = forwardAngle;
                 this.Color = color;
 
-                var rand = new Random();
-                var arms = new List<Vector>();
-                for (int i = 0; i < 1 + Math.Sqrt(radius); i++)
+                Random rand = new Random();
+                List<Vector> arms = new List<Vector>();
+                double armNum = 1 + Math.Sqrt(radius);
+                for (int i = 0; i < armNum; i++)
                 {
-                    arms.Add(new Vector()
-                    {
-                        Length = radius - rand.Next() * radius * roughness
-                    });
+                    double angle = forwardAngle + i * 2 * Math.PI / (armNum + 1);
+                    double length = radius - rand.NextDouble() * radius * roughness;
+                    arms.Add(VecCirc(angle, length, vel.Origin, deltaRot));
                 }
                 this.Arms = arms;
                 this.AlignPoints();
@@ -216,6 +216,11 @@ namespace Orbitroids.Game
             public double Roughness { get; set; }
             public IEnumerable<Vector> Arms { get; set; }
             
+            new public void ApplyMotion()
+            {
+                base.ApplyMotion();
+                this.AlignPoints();
+            }
             public IEnumerable<Vector> ConstructSides()
             {
                 Vector[] arms = this.Arms.ToArray();
@@ -229,12 +234,14 @@ namespace Orbitroids.Game
             }
             public void AlignPoints()
             {
-                var arms = this.Arms.ToArray();
+                Vector[] arms = this.Arms.ToArray();
                 for (int i = 0; i < this.Arms.Count(); i++)
                 {
-                    var angle = this.ForwardAngle + i * 2 * arms[i].Length == 0 ? 0 : Math.PI / arms[i].Length;
+                    int armNum = arms.Count();
+                    double angle = this.ForwardAngle + i * 2 * (armNum == 0 ? 0 : Math.PI / armNum);
                     arms[i] = VecCirc(angle, arms[i].Length, this.Vel.Origin, this.DeltaRot);
                 }
+                this.Arms = arms;
             }
         }
     }

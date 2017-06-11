@@ -109,7 +109,7 @@ namespace Orbitroids.Game
 
             vector.Delta = new Coordinate(head.X - origin.X, head.Y - origin.Y);
             vector.Length = Math.Sqrt(Math.Pow(vector.Delta.X, 2) + Math.Pow(vector.Delta.Y, 2));
-            var unitDelta = new Coordinate(
+            Coordinate unitDelta = new Coordinate(
                 vector.Length == 0 ? 0 : vector.Delta.X / vector.Length,
                 vector.Length == 0 ? 0 : vector.Delta.Y / vector.Length
                 );

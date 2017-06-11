@@ -168,9 +168,9 @@ namespace Orbitroids.Game
             IEnumerable<Vector> red = polyRed.ConstructSides();
             IEnumerable<Vector> blue = polyBlue.ConstructSides();
 
-            foreach (var r in red)
+            foreach (Vector r in red)
             {
-                foreach (var b in blue)
+                foreach (Vector b in blue)
                 {
                     double denominator = ((r.Origin.X - r.Head.X) * (b.Origin.Y - b.Head.Y)) - ((r.Origin.Y - r.Head.Y) * (b.Origin.X - b.Head.X));
                     double numerator1 = ((r.Head.Y - b.Head.Y) * (b.Origin.X - b.Head.X)) - ((r.Head.X - b.Head.X) * (b.Origin.Y - b.Head.Y));
@@ -205,7 +205,7 @@ namespace Orbitroids.Game
             temp = angles[angles.Count() - 1];
             for (int i = 0; i < angles.Count(); i++)
             {
-                var diff = angles[i] - temp;
+                double diff = angles[i] - temp;
                 if(Math.Abs(diff) > Math.PI)
                 {
                     if (diff < 0)

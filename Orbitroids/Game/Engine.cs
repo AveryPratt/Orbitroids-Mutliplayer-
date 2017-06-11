@@ -18,14 +18,13 @@ namespace Orbitroids.Game
             this.Shots = new List<Shot>();
             this.Ships = new List<Ship>();
 
-            Planet planet = new Planet(100, 50);
+            Planet planet = new Planet(300, 50, color: "#0080ff");
             Coordinate asteroidStartCoord = new Coordinate(0, 100);
             Coordinate shipStartCoord = new Coordinate(0, -100);
 
             this.Planets.Add(planet);
-            this.Asteroids.Add(new Asteroid(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, planet))));
-            this.Shots.Add(new Shot(VecCirc()));
-            this.Ships.Add(new Ship(VecCirc( 3 * Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord)));
+            this.Asteroids.Add(new Asteroid(VecCirc(3 * Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, planet), asteroidStartCoord)));
+            this.Ships.Add(new Ship(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord)));
         }
         public List<Planet> Planets { get; set; }
         public List<Asteroid> Asteroids { get; set; }
@@ -100,7 +99,7 @@ namespace Orbitroids.Game
                 }
                 if (ship.Loaded)
                 {
-                    ship.Shoot();
+                    this.Shots.Add(ship.Shoot());
                 }
                 ship.ApplyMotion();
             }
