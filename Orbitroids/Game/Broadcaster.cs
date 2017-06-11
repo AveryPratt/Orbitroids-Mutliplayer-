@@ -33,6 +33,10 @@ namespace Orbitroids.Game
 
         public void RenderFrame(object state)
         {
+            if (model.Ships[0].Burning)
+            {
+
+            }
             model.Update();
             hubContext.Clients.All.renderFrame(model);
         }
@@ -73,26 +77,24 @@ namespace Orbitroids.Game
         public void Rotate(string direction, dynamic caller)
         {
             if (direction == "left")
-                model.Ships[0].AccelRot = model.Ships[0].RotPower;
+                model.Ships[0].IsRotating = "left";
             else if (direction == "right")
-                model.Ships[0].AccelRot = -model.Ships[0].RotPower;
+                model.Ships[0].IsRotating = "right";
         }
 
         public void ReleaseRotate(string direction, dynamic caller)
         {
-            if ((direction == "left" && model.Ships[0].AccelRot > 0) ||
-                (direction == "right" && model.Ships[0].AccelRot < 0))
-                model.Ships[0].AccelRot = 0;
+            model.Ships[0].IsRotating = null;
         }
 
         public void DampenControls(dynamic caller)
         {
-            model.Ships[0].RotPower = .03;
+            model.Ships[0].DampenRot = true;
         }
 
         public void ReleaseDampenControls(dynamic caller)
         {
-            model.Ships[0].RotPower = .1;
+            model.Ships[0].DampenRot = false;
         }
         public static Broadcaster Instance
         {

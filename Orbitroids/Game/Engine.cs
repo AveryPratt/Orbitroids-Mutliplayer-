@@ -13,20 +13,24 @@ namespace Orbitroids.Game
     {
         public Engine(Level level)
         {
-            this.Ships = new List<Ship>();
-            this.Shots = new List<Shot>();
-            this.Asteroids = new List<Asteroid>();
             this.Planets = new List<Planet>();
+            this.Asteroids = new List<Asteroid>();
+            this.Shots = new List<Shot>();
+            this.Ships = new List<Ship>();
 
-            this.Ships.Add(new Ship(VecCirc()));
+            Planet planet = new Planet(100, 50);
+            Coordinate asteroidStartCoord = new Coordinate(0, 100);
+            Coordinate shipStartCoord = new Coordinate(0, -100);
+
+            this.Planets.Add(planet);
+            this.Asteroids.Add(new Asteroid(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, planet))));
             this.Shots.Add(new Shot(VecCirc()));
-            this.Asteroids.Add(new Asteroid(VecCirc(), 10, .5));
-            this.Planets.Add(new Planet(100, 50));
+            this.Ships.Add(new Ship(VecCirc( 3 * Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord)));
         }
-        public List<Ship> Ships { get; set; }
-        public List<Shot> Shots { get; set; }
-        public List<Asteroid> Asteroids { get; set; }
         public List<Planet> Planets { get; set; }
+        public List<Asteroid> Asteroids { get; set; }
+        public List<Shot> Shots { get; set; }
+        public List<Ship> Ships { get; set; }
 
         private void applyMotion()
         {
@@ -40,7 +44,6 @@ namespace Orbitroids.Game
         {
             foreach (Asteroid asteroid in this.Asteroids)
             {
-                asteroid.ResetAccel();
                 foreach (Planet planet in this.Planets)
                 {
                     asteroid.ApplyGravity(planet);
@@ -53,7 +56,6 @@ namespace Orbitroids.Game
         {
             foreach (Shot shot in this.Shots)
             {
-                shot.ResetAccel();
                 foreach (Planet planet in this.Planets)
                 {
                     shot.ApplyGravity(planet);
@@ -66,7 +68,6 @@ namespace Orbitroids.Game
         {
             foreach (Planet planet in this.Planets)
             {
-                planet.ResetAccel();
                 foreach (Planet otherPlanet in this.Planets)
                 {
                     if (!ReferenceEquals(planet, otherPlanet))
@@ -82,7 +83,6 @@ namespace Orbitroids.Game
         {
             foreach (Ship ship in this.Ships)
             {
-                ship.ResetAccel();
                 foreach (Planet planet in this.Planets)
                 {
                     ship.ApplyGravity(planet);

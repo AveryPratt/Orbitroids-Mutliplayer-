@@ -1,45 +1,74 @@
 ﻿'use strict';
 
-var orbs = {};
-orbs.gameParams = [];
+$(document).ready(function () {
+    orbs.drawings = {
+        renderPlanets: function (planets, ctx) {
+            for (var idx in planets) {
+                var planet = planets[idx];
+                var center = orbs.convertPoint(planet.Vel.Origin);
+                ctx.arc(center.x, center.y, planet.Radius, 0, 2 * Math.PI, false);
 
-//orbs.selectGameType = function (number) {
-//    orbs.gameParams['type'] = number;
+                //var sunVec = orbs.vecCirc(orbs.sunAngle + Math.PI, planet.Radius, center);
+                //var grd = ctx.createLinearGradient(sunVec.head.x, sunVec.head.y, planet.Radius, center.x, center.y, planet.Radius * 2);
+                //grd.addColorStop(0, planet.Color);
+                //grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
+                //ctx.fillStyle = grd;
+                ctx.fillStyle = planet.Color;
 
-//    var buttons = $('.game-type');
-//    buttons.css('background-color', 'rgb(64, 192, 192)');
-//    buttons.css('border-color', 'rgb(64, 128, 128)');
+                ctx.fill();
+            }
+        },
+        renderAsteroids: function (asteroids, ctx) {
+            for (var idx in asteroids) {
+                var asteroid = asteroids[idx];
+                var center = orbs.convertPoint(asteroid.Vel.Origin);
+                var points = [];
+                for (var arm in asteroid.Arms) {
+                    points.push(orbs.convertPoint(arm.Head));
+                }
+                orbs.ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+                for (var point in points) {
+                    ctx.lineTo(point.x, point.y);
+                }
+                ctx.closePath();
 
-//    if (number === 1) {
-//        var toHighlight = $('.game-type[value="Collaborative"]');
-//        $('.players[value="1"]').show();
-//    } else if (number === 2) {
-//        toHighlight = $('.game-type[value="Competitive"]');
-//        if (orbs.gameParams['players'] === 1) {
-//            orbs.gameParams['players'] = 2;
-//            orbs.selectPlayerNumber(orbs.gameParams['players']);
-//        }
-//        $('.players[value="1"]').hide();
-//    }
-//    toHighlight.css('background-color', 'rgb(192, 64, 192)');
-//    toHighlight.css('border-color', 'rgb(128, 64, 128)');
-//};
+                //var sunVec = orbs.vecCirc(orbs.sunAngle + Math.PI, asteroid.Radius, center);
+                //var grd = ctx.createRadialGradiant(sunVec.head.x, sunVec.head.y, asteroid.Radius, center.x, center.y, asteroid.Radius * 2);
+                //grd.addColorStop(0, asteroid.Color);
+                //grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
+                //ctx.fillStyle = grd;
+                ctx.fillStyle = asteroid.Color;
 
-//orbs.selectPlayerNumber = function (number) {
-//    orbs.gameParams['players'] = number;
-
-//    var buttons = $('.players');
-//    buttons.css('background-color', 'rgb(64, 192, 192)');
-//    buttons.css('border-color', 'rgb(64, 128, 128)');
-
-//    var toHighlight = $('.players[value="' + number + '"]');
-//    toHighlight.css('background-color', 'rgb(192, 64, 192)');
-//    toHighlight.css('border-color', 'rgb(128, 64, 128)');
-//};
-
-orbs.gameParams['type'] = 1;
-orbs.gameParams['players'] = 1;
-
-//orbs.selectGameType(orbs.gameParams['type']);
-//orbs.selectPlayerNumber(orbs.gameParams['players']);
-
+                ctx.fill();
+            }
+        },
+        renderShots: function (shots, ctx) {
+            for (var idx in shots) {
+                var shot = shots[idx];
+                var center = orbs.convertPoint(shot.Vel.Origin);
+                ctx.beginPath();
+                ctx.arc(center.x, center.y, 1.5 * orbs.unit, 0, 2 * Math.PI, false);
+                ctx.fillStyle = shot.Color;
+                ctx.fill();
+            }
+        },
+        renderShips: function (ships, ctx) {
+            for (var idx in ships) {
+                var ship = ships[idx];
+                var center = orbs.convertPoint(ship.Vel.Origin);
+                var nose = orbs.convertPoint(ship.Arms[0].Head);
+                var right = orbs.convertPoint(ship.Arms[1].Head);
+                var left = orbs.convertPoint(ship.Arms[3].Head);
+                ctx.strokeStyle = ship.Color;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(nose.x, nose.y);
+                ctx.lineTo(right.x, right.y);
+                ctx.lineTo(center.x, center.y);
+                ctx.lineTo(left.x, left.y);
+                ctx.closePath();
+                ctx.stroke();
+            }
+        }
+    };
+});

@@ -1,77 +1,79 @@
 ﻿'use strict';
 
 $(document).ready(function () {
-    var game = $.connection.gameHub;
-    var canvas = document.getElementById('gamescreen');
-    var ctx = canvas.getContext('2d');
+    orbs.game = $.connection.gameHub,
+    orbs.canvas = document.getElementById('gamescreen'),
+    orbs.ctx = document.getElementById('gamescreen').getContext('2d'),
+    orbs.unit = 1,
+    orbs.convertPoint = function (point) {
+        return {
+            x: point.X + orbs.canvas.width / 2,
+            y: orbs.canvas.height / 2 - point.Y
+        };
+    }
 
-    game.client.log = function (message) {
+    orbs.game.client.log = function (message) {
         console.log(message);
     };
 
-    game.client.renderFrame = function (model) {
-        var ship = model.Ships[0];
-        var center = {
-            x: ship.Vel.Origin.X + 50,
-            y: ship.Vel.Origin.Y + 50
-        };
-        var nose = {
-            x: ship.Arms[0].Head.X + 50,
-            y: ship.Arms[0].Head.Y + 50
-        };
-        var right = {
-            x: ship.Arms[1].Head.X + 50,
-            y: ship.Arms[1].Head.Y + 50
-        };
-        var left = {
-            x: ship.Arms[3].Head.X + 50,
-            y: ship.Arms[3].Head.Y + 50
-        };
-        //ctx.strokeStyle = 'rgba(' + ship.Color + ')';
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(nose.x, nose.y);
-        ctx.lineTo(right.x, right.y);
-        ctx.lineTo(center.x, center.y);
-        ctx.lineTo(left.x, left.y);
-        ctx.closePath();
-        ctx.stroke();
-        console.log("Center: " +
-            ship.Vel.Origin.X + ", " + ship.Vel.Origin.Y + " | Nose: " +
-            ship.Arms[0].Head.X + ", " + ship.Arms[0].Head.Y + " | Right: " +
-            ship.Arms[1].Head.X + ", " + ship.Arms[1].Head.Y + " | Left: " +
-            ship.Arms[3].Head.X + ", " + ship.Arms[3].Head.Y);
+    orbs.game.client.renderFrame = function (model) {
+        if (window.innerWidth >= window.innerHeight) {
+            orbs.canvas.width = window.innerHeight;
+            orbs.canvas.height = window.innerHeight;
+            orbs.unit = window.innerHeight / 2000;
+        }
+        else {
+            orbs.canvas.width = window.innerWidth;
+            orbs.canvas.height = window.innerWidth;
+            orbs.unit = window.innerWidth / 2000;
+        }
+
+        orbs.ctx.fillStyle = "#000000";
+        orbs.ctx.fillRect(0, 0, orbs.canvas.width, orbs.canvas.height);
+
+        orbs.drawings.renderPlanets(model.Planets, orbs.ctx);
+        orbs.drawings.renderAsteroids(model.Asteroids, orbs.ctx);
+        orbs.drawings.renderShots(model.Shots, orbs.ctx);
+        orbs.drawings.renderShips(model.Ships, orbs.ctx);
+        console.log(model);
     }
 
     $(document).keydown(function (event) {
         switch (event.keyCode) {
             case 13: // enter
+                event.preventDefault();
                 game.server.enter();
                 break;
             case 80: // p
+                event.preventDefault();
                 game.server.pause();
                 break;
             case 32: // space
+                event.preventDefault();
                 game.server.shoot();
                 break;
             case 38: // up
             case 87: // w
+                event.preventDefault();
                 game.server.burn();
                 break;
             case 40: // down
             case 83: // s
+                event.preventDefault();
                 game.server.slowBurn();
                 break;
             case 37: // left
             case 65: // a
-                game.server.rotate("left");
+                event.preventDefault();
+                game.server.rotate("right");
                 break;
             case 39: // right
             case 68: // d
-                game.server.rotate("right");
+                event.preventDefault();
+                game.server.rotate("left");
                 break;
             case 16: // shift
+                event.preventDefault();
                 game.server.dampenControls();
                 break;
             default:
@@ -83,27 +85,31 @@ $(document).ready(function () {
         switch (event.keyCode) {
             case 38: // up
             case 87: // w
+                event.preventDefault();
                 game.server.releaseBurn();
                 break;
             case 40: // down
             case 83: // s
+                event.preventDefault();
                 game.server.releaseSlowBurn();
                 break;
             case 37: // left
             case 65: // a
-                game.server.releaseRotate("left");
+                event.preventDefault();
+                game.server.releaseRotate("right");
                 break;
             case 39: // right
             case 68: // d
-                game.server.releaseRotate("right");
+                event.preventDefault();
+                game.server.releaseRotate("left");
                 break;
             case 16: // shift
+                event.preventDefault();
                 game.server.releaseDampenControls();
                 break;
             default:
                 break;
         }
     });
-
     $.connection.hub.start();
 });

@@ -127,9 +127,9 @@ namespace Orbitroids.Game
         }
 
         [Obsolete("Method will always return false. This requires a system barycenter and a function to calculate escape velocity to be implemented.")]
-        private static bool checkObjectEscaped(IMovable obj, int systemMass)
+        private static bool checkObjectEscaped(IMovable obj, Planet barycenter)
         {
-            if (obj.Vel.Length > GetEscapeVelocity(obj, systemMass))
+            if (obj.Vel.Length > GetEscapeVelocity(obj.Vel.Origin, barycenter))
                 return true;
             return false;
         }

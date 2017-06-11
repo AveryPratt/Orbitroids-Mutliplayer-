@@ -12,17 +12,17 @@ namespace Orbitroids.Game
     {
         interface IColorable
         {
-            Color Color { get; set; }
+            string Color { get; set; }
         }
         
         public class Planet : Orbital, ICircular, IMassive, IColorable
         {
-            public Planet(int mass, int radius, Vector vel = null, Color? color = null, bool atmosphere = false, double forwardAngle = 0, double deltaRot = 0)
+            public Planet(int mass, int radius, Vector vel = null, string color = "#ffffff", bool atmosphere = false, double forwardAngle = 0, double deltaRot = 0)
             {
                 this.Mass = mass;
                 this.Radius = radius;
                 this.Vel = vel ?? new Vector();
-                this.Color = color ?? Color.FromArgb(1, 0, 0, 0);
+                this.Color = color;
                 this.IsAtmosphere = atmosphere;
                 this.ForwardAngle = forwardAngle;
                 this.DeltaRot = deltaRot;
@@ -30,19 +30,26 @@ namespace Orbitroids.Game
             
             public int Mass { get; set; }
             public int Radius { get; set; }
-            public Color Color { get; set; }
+            private Color color;
+            public string Color
+            {
+                get { return String.Format("#{0}{1}{2}", this.color.R.ToString("X2"), this.color.G.ToString("X2"), this.color.B.ToString("X2")); }
+                set { this.color = ColorTranslator.FromHtml(value); }
+            }
             public bool IsAtmosphere { get; set; }
         }
         
         public class Ship : Orbital, IPolygon, IColorable
         {
-            public Ship(Vector vel, Color? color = null, double forwardAngle = 0, double deltaRot = 0)
+            public Ship(Vector vel, string color = "#ffffff", double forwardAngle = 0, double deltaRot = 0)
             {
                 this.Vel = vel;
-                this.Color = color ?? Color.FromArgb(1, 0, 0, 0);
+                this.Color = color;
 
                 this.Burning = false;
-                this.RotPower = .1;
+                this.RotPower = .02;
+                this.BurnPower = .3;
+                this.DampenBurnPower = .1;
                 this.DampenBurn = false;
                 this.Loaded = false;
                 this.Destroyed = false;
@@ -52,29 +59,16 @@ namespace Orbitroids.Game
 
                 this.alignPoints();
             }
-
-            new public double ForwardAngle
-            {
-                get
-                {
-                    return this.forwardAngle;
-                }
-                set
-                {
-                    while (value >= Math.PI * 2)
-                        value -= Math.PI * 2;
-                    while (value < 0)
-                        value += Math.PI * 2;
-                    this.forwardAngle = value;
-                }
-            }
             
-            new public Vector Vel { get; set; }
-            public double RotPower { get; set; }
             public double BurnPower { get; set; }
             public double DampenBurnPower { get; set; }
             public int Radius { get; set; }
-            public Color Color { get; set; }
+            private Color color;
+            public string Color
+            {
+                get { return String.Format("#{0}{1}{2}", this.color.R.ToString("X2"), this.color.G.ToString("X2"), this.color.B.ToString("X2")); }
+                set { this.color = ColorTranslator.FromHtml(value); }
+            }
             public bool Burning { get; set; }
             public bool DampenRot { get; set; }
             public bool DampenBurn { get; set; }
@@ -83,7 +77,7 @@ namespace Orbitroids.Game
             public int MaxRadius { get; set; }
             public IEnumerable<Vector> Arms { get; set; }
             public Vector TrueAnomaly { get; set; }
-            
+
             public IEnumerable<Vector> ConstructSides()
             {
                 Vector[] arms = this.Arms.ToArray();
@@ -105,18 +99,56 @@ namespace Orbitroids.Game
                     VecCirc(this.ForwardAngle - 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin)
                 };
             }
-            public void Rotate()
+            new protected void Rotate()
             {
-                if ((this.AccelRot < 0 && this.DeltaRot > -.2) || 
-                    (this.AccelRot > 0 && this.DeltaRot < .2))
+                double maxRotPower = this.RotPower;
+
+                if (this.DampenRot)
+                {
+                    // slows rotation to 0
+                    if (this.DeltaRot < 0)
+                    {
+                        this.AccelRot = this.RotPower / 2;
+                        this.DeltaRot += this.AccelRot;
+                        if (this.DeltaRot > 0)
+                        {
+                            this.DeltaRot = 0;
+                            this.AccelRot = 0;
+                        }
+                    }
+                    else if (this.DeltaRot > 0)
+                    {
+                        this.AccelRot = -this.RotPower / 2;
+                        this.DeltaRot += this.AccelRot;
+                        if (this.DeltaRot < 0)
+                        {
+                            this.DeltaRot = 0;
+                            this.AccelRot = 0;
+                        }
+                    }
+                }
+                else
+                    maxRotPower = .2;
+
+                if (this.IsRotating == "right")
+                    this.AccelRot = -this.RotPower;
+                else if (this.IsRotating == "left")
+                    this.AccelRot = this.RotPower;
+                if ((this.AccelRot < 0 && this.DeltaRot > -maxRotPower) || 
+                    (this.AccelRot > 0 && this.DeltaRot < maxRotPower))
                 {
                     this.DeltaRot += this.AccelRot;
                 }
+
                 this.ForwardAngle += this.DeltaRot;
             }
             new public void ApplyMotion()
             {
-                base.ApplyMotion();
+                this.Rotate();
+                this.Vel = AddVectors(this.Vel, this.Accel);
+                this.Vel = VecDelta(this.Vel.Delta, this.Vel.Head, this.Vel.DeltaRot);
+                this.Accel = new Vector();
+                this.AccelRot = 0;
                 this.TrueAnomaly = VecCart(this.Vel.Origin, new Coordinate());
                 this.alignPoints();
             }
@@ -124,36 +156,42 @@ namespace Orbitroids.Game
             {
                 this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle, force));
             }
-            public void Shoot()
+            public Shot Shoot()
             {
-                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, .5));
+                this.Loaded = false;
+                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, 1));
                 var projection = VecCirc(this.ForwardAngle, 2.5, this.Arms.ToArray()[0].Head);
                 projection = AddVectors(projection, this.Vel);
-                new Shot(projection);
+                return new Shot(projection);
             }
         }
         
         public class Shot : Orbital, IColorable
         {
-            public Shot(Vector vel, Color? color = null)
+            public Shot(Vector vel, string color = "#ffffff")
             {
                 this.Vel = vel;
-                this.Color = color ?? Color.FromArgb(1, 0, 0, 0);
+                this.Color = color;
             }
-            
-            public Color Color { get; set; }
+
+            private Color color;
+            public string Color
+            {
+                get { return String.Format("#{0}{1}{2}", this.color.R.ToString("X2"), this.color.G.ToString("X2"), this.color.B.ToString("X2")); }
+                set { this.color = ColorTranslator.FromHtml(value); }
+            }
         }
         
         public class Asteroid : Orbital, IPolygon, IColorable
         {
-            public Asteroid(Vector vel, int radius, double roughness, Color? color = null, double deltaRot = 0, double forwardAngle = 0)
+            public Asteroid(Vector vel, int radius = 10, double roughness = .5, string color = "#808080", double deltaRot = 0, double forwardAngle = 0)
             {
                 this.Vel = vel;
                 this.Radius = radius;
                 this.Roughness = roughness;
                 this.DeltaRot = deltaRot;
                 this.ForwardAngle = forwardAngle;
-                this.Color = color ?? Color.FromArgb(1, 0, 0, 0);
+                this.Color = color;
 
                 var rand = new Random();
                 var arms = new List<Vector>();
@@ -168,7 +206,12 @@ namespace Orbitroids.Game
                 this.AlignPoints();
             }
 
-            public Color Color { get; set; }
+            private Color color;
+            public string Color
+            {
+                get { return String.Format("#{0}{1}{2}", this.color.R.ToString("X2"), this.color.G.ToString("X2"), this.color.B.ToString("X2")); }
+                set { this.color = ColorTranslator.FromHtml(value); }
+            }
             public int Radius { get; set; }
             public double Roughness { get; set; }
             public IEnumerable<Vector> Arms { get; set; }

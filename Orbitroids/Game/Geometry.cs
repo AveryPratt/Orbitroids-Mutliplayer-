@@ -68,10 +68,16 @@ namespace Orbitroids.Game
             }
             public double AccelRot { get; set; }
             public double DeltaRot { get; set; }
+            public string IsRotating { get; set; }
+            public double RotPower { get; set; }
 
-            public void Rotate(double accelRot = 0)
+            protected void Rotate()
             {
-                this.DeltaRot += accelRot;
+                if (this.IsRotating == "right")
+                    this.AccelRot -= this.RotPower;
+                else if (this.IsRotating == "left")
+                    this.AccelRot += this.RotPower;
+
                 this.ForwardAngle += DeltaRot;
             }
         }
@@ -172,14 +178,13 @@ namespace Orbitroids.Game
             {
                 this.Accel = AddVectors(this.Accel, accel);
             }
-            public void ResetAccel()
-            {
-                this.Accel = new Vector();
-            }
             public void ApplyMotion()
             {
+                this.Rotate();
                 this.Vel = AddVectors(this.Vel, this.Accel);
                 this.Vel = VecDelta(this.Vel.Delta, this.Vel.Head, this.Vel.DeltaRot);
+                this.Accel = new Vector();
+                this.AccelRot = 0;
             }
         }
     }

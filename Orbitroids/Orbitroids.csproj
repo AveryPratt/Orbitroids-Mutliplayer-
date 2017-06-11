@@ -240,8 +240,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
-    <Content Include="Scripts\SignalR.js" />
     <Content Include="Scripts\Orbitroids.js" />
+    <Content Include="Scripts\SignalR.js" />
+    <Content Include="Scripts\Extras.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />

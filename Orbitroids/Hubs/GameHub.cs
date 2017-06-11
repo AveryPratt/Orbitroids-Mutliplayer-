@@ -67,7 +67,7 @@ namespace Orbitroids.Hubs
 
         public void ReleaseRotate(string direction)
         {
-            broadcaster.Rotate(direction, Clients.Caller);
+            broadcaster.ReleaseRotate(direction, Clients.Caller);
             Clients.All.log("release rotate " + direction);
         }
 
