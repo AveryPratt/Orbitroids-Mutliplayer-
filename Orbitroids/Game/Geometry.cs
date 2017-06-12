@@ -21,7 +21,7 @@ namespace Orbitroids.Game
 
         public interface ICircular : IMovable
         {
-            int Radius { get; set; }
+            double Radius { get; set; }
         }
 
         public interface IPolygon : ICircular
@@ -107,7 +107,7 @@ namespace Orbitroids.Game
             vector.Origin = origin ?? new Coordinate(0, 0);
             vector.DeltaRot = deltaRot;
 
-            vector.Delta = new Coordinate(head.X - origin.X, head.Y - origin.Y);
+            vector.Delta = new Coordinate(head.X - vector.Origin.X, head.Y - vector.Origin.Y);
             vector.Length = Math.Sqrt(Math.Pow(vector.Delta.X, 2) + Math.Pow(vector.Delta.Y, 2));
             Coordinate unitDelta = new Coordinate(
                 vector.Length == 0 ? 0 : vector.Delta.X / vector.Length,

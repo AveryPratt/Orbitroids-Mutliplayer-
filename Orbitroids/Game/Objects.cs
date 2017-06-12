@@ -29,7 +29,7 @@ namespace Orbitroids.Game
             }
             
             public int Mass { get; set; }
-            public int Radius { get; set; }
+            public double Radius { get; set; }
             private Color color;
             public string Color
             {
@@ -62,7 +62,7 @@ namespace Orbitroids.Game
             
             public double BurnPower { get; set; }
             public double DampenBurnPower { get; set; }
-            public int Radius { get; set; }
+            public double Radius { get; set; }
             private Color color;
             public string Color
             {
@@ -184,7 +184,7 @@ namespace Orbitroids.Game
         
         public class Asteroid : Orbital, IPolygon, IColorable
         {
-            public Asteroid(Vector vel, int radius = 10, double roughness = .5, string color = "#808080", double deltaRot = 0, double forwardAngle = 0)
+            public Asteroid(Vector vel, double radius = 50, double roughness = .5, string color = "#808080", double deltaRot = 0, double forwardAngle = 0)
             {
                 this.Vel = vel;
                 this.Radius = radius;
@@ -212,7 +212,7 @@ namespace Orbitroids.Game
                 get { return String.Format("#{0}{1}{2}", this.color.R.ToString("X2"), this.color.G.ToString("X2"), this.color.B.ToString("X2")); }
                 set { this.color = ColorTranslator.FromHtml(value); }
             }
-            public int Radius { get; set; }
+            public double Radius { get; set; }
             public double Roughness { get; set; }
             public IEnumerable<Vector> Arms { get; set; }
             

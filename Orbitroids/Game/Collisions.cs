@@ -13,8 +13,11 @@ namespace Orbitroids.Game
         public delegate void DestroyAsteroids(IEnumerable<Asteroid> asteroids);
         public delegate void DestroyShips(IEnumerable<Ship> ships);
 
-        public static void HandleCollisions(IEnumerable<Shot> shots, IEnumerable<Asteroid> asteroids, IEnumerable<Planet> planets, IEnumerable<Ship> ships, DestroyShots destroyShots, DestroyShips destroyShips, DestroyAsteroids destroyAsteroids)
+        public static void HandleCollisions(IEnumerable<Shot> shots, IEnumerable<Asteroid> asteroids, IEnumerable<Planet> planets, IEnumerable<Ship> ships, IMassive barycenter, DestroyShots destroyShots, DestroyShips destroyShips, DestroyAsteroids destroyAsteroids)
         {
+            CheckShotEscaped(shots, destroyShots, barycenter);
+            CheckAsteroidEscaped(asteroids, destroyAsteroids, barycenter);
+            CheckShipEscaped(ships, destroyShips);
             CheckShotAsteroidCollision(shots, asteroids, destroyShots, destroyAsteroids);
             CheckShotShipCollision(shots, ships, destroyShots, destroyShips);
             CheckShotPlanetCollision(shots, planets, destroyShots);
@@ -22,6 +25,47 @@ namespace Orbitroids.Game
             CheckAsteroidPlanetCollision(asteroids, planets, destroyAsteroids);
             CheckShipPlanetCollision(ships, planets, destroyShips);
         }
+
+        private static void CheckShipEscaped(IEnumerable<Ship> ships, DestroyShips destroyShips)
+        {
+            List<Ship> doomedShips = new List<Ship>();
+            foreach (Ship ship in ships)
+            {
+                if (Math.Abs(ship.Vel.Origin.X) > 500 || 
+                    Math.Abs(ship.Vel.Origin.Y) > 500)
+                {
+                    doomedShips.Add(ship);
+                }
+            }
+            destroyShips(doomedShips);
+        }
+
+        private static void CheckAsteroidEscaped(IEnumerable<Asteroid> asteroids, DestroyAsteroids destroyAsteroids, IMassive barycenter)
+        {
+            List<Asteroid> doomedAsteroids = new List<Asteroid>();
+            foreach (Asteroid asteroid in asteroids)
+            {
+                if ((Math.Abs(asteroid.Vel.Origin.X) > 300 || Math.Abs(asteroid.Vel.Origin.Y) > 300) && Physics.GetEscapeVelocity(asteroid.Vel.Origin, barycenter) <= asteroid.Vel.Length)
+                {
+                    doomedAsteroids.Add(asteroid);
+                }
+            }
+            destroyAsteroids(doomedAsteroids);
+        }
+
+        private static void CheckShotEscaped(IEnumerable<Shot> shots, DestroyShots destroyShots, IMassive barycenter)
+        {
+            List<Shot> doomedShots = new List<Shot>();
+            foreach (Shot shot in shots)
+            {
+                if ((Math.Abs(shot.Vel.Origin.X) > 300 || Math.Abs(shot.Vel.Origin.Y) > 300) && Physics.GetEscapeVelocity(shot.Vel.Origin, barycenter) <= shot.Vel.Length)
+                {
+                    doomedShots.Add(shot);
+                }
+            }
+            destroyShots(doomedShots);
+        }
+
         public static void CheckShotAsteroidCollision(IEnumerable<Shot> shots, IEnumerable<Asteroid> asteroids, DestroyShots destroyShots, DestroyAsteroids destroyAsteroids) // 50 * 30 = 1500 / 2082
         {
             List<Shot> doomedShots = new List<Shot>();

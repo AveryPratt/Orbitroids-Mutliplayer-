@@ -25,11 +25,19 @@ namespace Orbitroids.Game
             this.Planets.Add(planet);
             this.Asteroids.Add(new Asteroid(VecCirc(3 * Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, planet), asteroidStartCoord)));
             this.Ships.Add(new Ship(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord)));
+
+            int barycenterMass = 0;
+            foreach (Planet p in this.Planets)
+            {
+                barycenterMass += p.Mass;
+            }
+            this.Barycenter = new Planet(barycenterMass, 0);
         }
         public List<Planet> Planets { get; set; }
         public List<Asteroid> Asteroids { get; set; }
         public List<Shot> Shots { get; set; }
         public List<Ship> Ships { get; set; }
+        public IMassive Barycenter { get; private set; }
 
         private void applyMotion()
         {
@@ -118,7 +126,34 @@ namespace Orbitroids.Game
             foreach (Asteroid asteroid in asteroids)
             {
                 this.Asteroids.Remove(asteroid);
+                //int splits = Convert.ToInt32(Math.Floor(Math.Sqrt(asteroid.Radius / 2))); // 8-2 18-3 32-4 50-5
+                Asteroid[] newAsteroids = splitAsteroid(asteroid, 3, 50);
+                if(newAsteroids != null)
+                {
+                    this.Asteroids.AddRange(newAsteroids);
+                }
             }
+        }
+
+        private Asteroid[] splitAsteroid(Asteroid asteroid, int splits, double power)
+        {
+            if(asteroid.Radius > 15)
+            {
+                double asteroidArea = Math.Pow(asteroid.Radius, 2);
+                double remainingArea = asteroidArea;
+                Asteroid[] newAsteroids = new Asteroid[splits];
+                for (int i = 0; i < splits; i++)
+                {
+                    Random rand = new Random();
+                    double area = rand.Next(1, 4) * .5 * remainingArea / (splits - i);
+                    double angle = 2 * Math.PI / (splits - i);
+                    double speed = power / area;
+                    newAsteroids[i] = new Asteroid(AddVectors(asteroid.Vel, VecCirc(angle, speed)), Math.Sqrt(area), asteroid.Roughness, asteroid.Color, asteroid.DeltaRot);
+                    remainingArea -= area;
+                }
+                return newAsteroids;
+            }
+            return null;
         }
 
         private void destroyShips(IEnumerable<Ship> ships)
@@ -133,12 +168,13 @@ namespace Orbitroids.Game
         {
             applyMotion();
             Collisions.HandleCollisions(
-                this.Shots, 
-                this.Asteroids, 
-                this.Planets, 
-                this.Ships, 
-                this.destroyShots, 
-                this.destroyShips, 
+                this.Shots,
+                this.Asteroids,
+                this.Planets,
+                this.Ships,
+                this.Barycenter,
+                this.destroyShots,
+                this.destroyShips,
                 this.destroyAsteroids);
         }
     }
