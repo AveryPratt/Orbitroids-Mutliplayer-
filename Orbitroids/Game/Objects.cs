@@ -17,7 +17,7 @@ namespace Orbitroids.Game
         
         public class Planet : Orbital, ICircular, IMassive, IColorable
         {
-            public Planet(int mass, int radius, Vector vel = null, string color = "#ffffff", bool atmosphere = false, double forwardAngle = 0, double deltaRot = 0)
+            public Planet(double mass, double radius, Vector vel = null, string color = "#ffffff", bool atmosphere = false, double forwardAngle = 0, double deltaRot = 0)
             {
                 this.Mass = mass;
                 this.Radius = radius;
@@ -28,7 +28,7 @@ namespace Orbitroids.Game
                 this.DeltaRot = deltaRot;
             }
             
-            public int Mass { get; set; }
+            public double Mass { get; set; }
             public double Radius { get; set; }
             private Color color;
             public string Color
@@ -47,9 +47,10 @@ namespace Orbitroids.Game
                 this.Color = color;
 
                 this.Burning = false;
-                this.RotPower = .02;
-                this.BurnPower = .3;
-                this.DampenBurnPower = .1;
+                this.RotPower = .2;
+                this.ShotPower = 10;
+                this.BurnPower = 1;
+                this.DampenBurnPower = .3;
                 this.DampenBurn = false;
                 this.Loaded = false;
                 this.Destroyed = false;
@@ -62,6 +63,7 @@ namespace Orbitroids.Game
             
             public double BurnPower { get; set; }
             public double DampenBurnPower { get; set; }
+            public double ShotPower { get; set; }
             public double Radius { get; set; }
             private Color color;
             public string Color
@@ -128,7 +130,7 @@ namespace Orbitroids.Game
                     }
                 }
                 else
-                    maxRotPower = .2;
+                    maxRotPower = 1;
 
                 if (this.IsRotating == "right")
                     this.AccelRot = -this.RotPower;
@@ -160,7 +162,7 @@ namespace Orbitroids.Game
             {
                 this.Loaded = false;
                 this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, 1));
-                Vector projection = VecCirc(this.ForwardAngle, 2.5, this.Arms.ToArray()[0].Head);
+                Vector projection = VecCirc(this.ForwardAngle, this.ShotPower, this.Arms.ToArray()[0].Head);
                 projection = AddVectors(projection, this.Vel);
                 return new Shot(projection);
             }

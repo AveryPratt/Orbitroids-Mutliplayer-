@@ -11,14 +11,17 @@ namespace Orbitroids.Game
 {
     public class Engine
     {
-        public Engine(Level level)
+        public Engine(Level level, double milliseconds)
         {
+            this.FPS = 1000 / milliseconds;
             this.Planets = new List<Planet>();
             this.Asteroids = new List<Asteroid>();
             this.Shots = new List<Shot>();
             this.Ships = new List<Ship>();
+            this.MaxShots = 30;
+            this.MaxAsteroids = 30;
 
-            Planet planet = new Planet(300, 50, color: "#0080ff");
+            Planet planet = new Planet(50000 / this.FPS, 50, color: "#0080ff");
             Coordinate asteroidStartCoord = new Coordinate(0, 100);
             Coordinate shipStartCoord = new Coordinate(0, -100);
 
@@ -26,7 +29,7 @@ namespace Orbitroids.Game
             this.Asteroids.Add(new Asteroid(VecCirc(3 * Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, planet), asteroidStartCoord)));
             this.Ships.Add(new Ship(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord)));
 
-            int barycenterMass = 0;
+            double barycenterMass = 0;
             foreach (Planet p in this.Planets)
             {
                 barycenterMass += p.Mass;
@@ -38,6 +41,9 @@ namespace Orbitroids.Game
         public List<Shot> Shots { get; set; }
         public List<Ship> Ships { get; set; }
         public IMassive Barycenter { get; private set; }
+        public int MaxShots { get; set; }
+        public int MaxAsteroids { get; set; }
+        public double FPS { get; private set; }
 
         private void applyMotion()
         {
@@ -164,9 +170,32 @@ namespace Orbitroids.Game
             }
         }
 
+        private void destroyExtraShots()
+        {
+            // removes oldest shots
+            if (this.Shots.Count() > this.MaxShots)
+            {
+                List<Shot> remainingShots = this.Shots.ToList();
+                remainingShots.RemoveRange(0, this.Shots.Count() - this.MaxShots);
+                this.Shots = remainingShots;
+            }
+        }
+
+        private void destroyExtraAsteroids()
+        {
+            // removes most recent asteroids
+            if (this.Asteroids.Count() > this.MaxAsteroids)
+            {
+                List<Asteroid> remainingAsteroids = this.Asteroids.ToList();
+                remainingAsteroids.RemoveRange(this.MaxAsteroids, this.Asteroids.Count() - this.MaxAsteroids);
+                this.Asteroids = remainingAsteroids;
+            }
+        }
+
         public void Update()
         {
             applyMotion();
+
             Collisions.HandleCollisions(
                 this.Shots,
                 this.Asteroids,
@@ -176,6 +205,8 @@ namespace Orbitroids.Game
                 this.destroyShots,
                 this.destroyShips,
                 this.destroyAsteroids);
+            destroyExtraShots();
+            destroyExtraAsteroids();
         }
     }
 }

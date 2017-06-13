@@ -12,7 +12,7 @@ namespace Orbitroids.Game
     public class Broadcaster
     {
         private readonly static Lazy<Broadcaster> instance = new Lazy<Broadcaster>(() => new Broadcaster());
-        private readonly TimeSpan broadcastInterval = TimeSpan.FromMilliseconds(16); // 62.5 fps
+        private readonly TimeSpan broadcastInterval = TimeSpan.FromMilliseconds(1000 / 10);
         private readonly IHubContext hubContext;
         private Level level;
         private Timer broadcastLoop;
@@ -22,23 +22,23 @@ namespace Orbitroids.Game
             // Save our hub context so we can easily use it 
             // to send to its connected clients
             hubContext = GlobalHost.ConnectionManager.GetHubContext<GameHub>();
-            model = new Engine(level);
+            model = new Engine(level, broadcastInterval.TotalMilliseconds);
             // Start the broadcast loop
             broadcastLoop = new Timer(
-                RenderFrame,
+                RenderFrameServer,
                 null,
                 broadcastInterval,
                 broadcastInterval);
         }
 
-        public void RenderFrame(object state)
+        public void RenderFrameServer(object state)
         {
             if (model.Ships[0].Burning)
             {
 
             }
             model.Update();
-            hubContext.Clients.All.renderFrame(model);
+            hubContext.Clients.All.receiveUpdate(model, DateTime.UtcNow);
         }
 
         public void Enter(dynamic caller)

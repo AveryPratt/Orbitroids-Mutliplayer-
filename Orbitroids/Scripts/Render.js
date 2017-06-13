@@ -2,9 +2,16 @@
 
 $(document).ready(function () {
     orbs.drawings = {
-        renderPlanets: function (planets) {
+        renderPlanets: function (planets, dt) {
             for (var idx in planets) {
                 var planet = planets[idx];
+                var otherplanets = [];
+                for (var i = 0; i < planets.length; i++) {
+                    if (i != idx) {
+                        otherplanets.push(planets[i])
+                    }
+                }
+                orbs.animate.updateOrbital(planet, otherplanets, dt);
 
                 var center = orbs.convertPoint(planet.Vel.Origin);
 
@@ -16,15 +23,17 @@ $(document).ready(function () {
                 orbs.ctx.fillStyle = planet.Color;
 
                 orbs.ctx.beginPath();
-                orbs.ctx.arc(center.x, center.y, planet.Radius, 0, 2 * Math.PI, false);
+                orbs.ctx.arc(center.x, center.y, planet.Radius * orbs.unit, 0, 2 * Math.PI, false);
                 orbs.ctx.closePath();
 
                 orbs.ctx.fill();
             }
         },
-        renderAsteroids: function (asteroids) {
+        renderAsteroids: function (asteroids, planets, dt) {
             for (var idx in asteroids) {
                 var asteroid = asteroids[idx];
+                orbs.animate.updateOrbital(asteroid, planets, dt);
+                orbs.animate.updateRotational(asteroid, dt);
 
                 var points = [];
                 for (var a in asteroid.Arms) {
@@ -48,9 +57,10 @@ $(document).ready(function () {
                 orbs.ctx.fill();
             }
         },
-        renderShots: function (shots) {
+        renderShots: function (shots, planets, dt) {
             for (var idx in shots) {
                 var shot = shots[idx];
+                orbs.animate.updateOrbital(shot, planets, dt);
 
                 var center = orbs.convertPoint(shot.Vel.Origin);
 
@@ -63,9 +73,11 @@ $(document).ready(function () {
                 orbs.ctx.fill();
             }
         },
-        renderShips: function (ships) {
+        renderShips: function (ships, planets, dt) {
             for (var idx in ships) {
                 var ship = ships[idx];
+                orbs.animate.updateOrbital(ship, planets, dt);
+                orbs.animate.updateRotational(ship, dt);
 
                 var points = [];
                 for (var a in ship.Arms) {

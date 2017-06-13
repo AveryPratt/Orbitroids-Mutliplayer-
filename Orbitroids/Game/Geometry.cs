@@ -16,7 +16,7 @@ namespace Orbitroids.Game
         }
         public interface IMassive : IMovable
         {
-            int Mass { get; set; }
+            double Mass { get; set; }
         }
 
         public interface ICircular : IMovable

@@ -234,13 +234,14 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Scripts\Animate.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
-    <Content Include="Scripts\Orbitroids.js" />
+    <Content Include="Scripts\Render.js" />
     <Content Include="Scripts\SignalR.js" />
     <Content Include="Scripts\Extras.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
