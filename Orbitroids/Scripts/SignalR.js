@@ -5,8 +5,9 @@ $(document).ready(function () {
     orbs.canvas = document.getElementById('gamescreen'),
     orbs.ctx = document.getElementById('gamescreen').getContext('2d'),
     orbs.unit = 1,
-    orbs.updateRate = 1000 / 100;
-    orbs.lastTime;
+    orbs.ups;
+    orbs.lastModelUpdate;
+    orbs.lastClientUpdate;
     orbs.fps;
     orbs.convertPoint = function (point) {
         return {
@@ -19,19 +20,27 @@ $(document).ready(function () {
         console.log(message);
     };
 
-    orbs.game.client.receiveUpdate = function (model, time) {
+    orbs.game.client.receiveUpdate = function (model, ups) {
         orbs.model = model;
-        orbs.lastTime = time;
-        orbs.renderFrame();
+        orbs.ups = ups;
+        orbs.lastModelUpdate = Date.now();
+        console.log(orbs.model);
     }
-
+    
     orbs.renderFrame = function () {
+        requestAnimationFrame(orbs.renderFrame);
+
         var time = Date.now();
 
         // fps counter
-        var delta = (time - orbs.lastTime) / 1000;
+        var delta = (time - orbs.lastClientUpdate) / 1000;
         orbs.fps = 1 / delta;
-        console.log(orbs.fps);
+        orbs.lastClientUpdate = time;
+        if (orbs.model) {
+            console.log(orbs.model.Ships[0].Arms[0].Head.X + ", " + orbs.model.Ships[0].Arms[0].Head.Y);
+        }
+
+        var dt = time - orbs.lastModelUpdate;
 
         if (window.innerWidth >= window.innerHeight) {
             orbs.canvas.width = window.innerHeight;
@@ -44,19 +53,15 @@ $(document).ready(function () {
             orbs.unit = window.innerWidth / 1000;
         }
 
-        requestAnimationFrame(orbs.renderFrame);
+        if (orbs.model) {
+            orbs.ctx.fillStyle = "#000000";
+            orbs.ctx.fillRect(0, 0, orbs.canvas.width, orbs.canvas.height);
 
-        var dt = (time - orbs.lastTime) / orbs.updateRate;
-        orbs.lastTime = time;
-
-        orbs.ctx.fillStyle = "#000000";
-        orbs.ctx.fillRect(0, 0, orbs.canvas.width, orbs.canvas.height);
-
-        orbs.drawings.renderPlanets(orbs.model.Planets, orbs.ctx, dt);
-        orbs.drawings.renderAsteroids(orbs.model.Asteroids, orbs.model.Planets, orbs.ctx, dt);
-        orbs.drawings.renderShots(orbs.model.Shots, orbs.model.Planets, orbs.ctx, dt);
-        orbs.drawings.renderShips(orbs.model.Ships, orbs.model.Planets, orbs.ctx, dt);
-        console.log(orbs.model);
+            orbs.drawings.renderPlanets(dt);
+            orbs.drawings.renderAsteroids(dt);
+            orbs.drawings.renderShots(dt);
+            orbs.drawings.renderShips(dt);
+        }
     }
 
     $(document).keydown(function (event) {

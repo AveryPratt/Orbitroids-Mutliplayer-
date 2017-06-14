@@ -38,7 +38,7 @@ namespace Orbitroids.Game
 
             }
             model.Update();
-            hubContext.Clients.All.receiveUpdate(model, DateTime.UtcNow);
+            hubContext.Clients.All.receiveUpdate(model, broadcastInterval.TotalMilliseconds);
         }
 
         public void Enter(dynamic caller)

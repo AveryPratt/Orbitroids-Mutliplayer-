@@ -2,42 +2,39 @@
 
 $(document).ready(function () {
     orbs.drawings = {
-        renderPlanets: function (planets, dt) {
-            for (var idx in planets) {
-                var planet = planets[idx];
+        renderPlanets: function (dt) {
+            for (var idx in orbs.model.Planets) {
                 var otherplanets = [];
-                for (var i = 0; i < planets.length; i++) {
+                for (var i = 0; i < orbs.model.Planets.length; i++) {
                     if (i != idx) {
-                        otherplanets.push(planets[i])
+                        otherplanets.push(orbs.model.Planets[i]);
                     }
                 }
-                orbs.animate.updateOrbital(planet, otherplanets, dt);
+                orbs.model.Planets[idx] = orbs.animate.updateOrbital(orbs.model.Planets[idx], otherplanets, dt);
 
-                var center = orbs.convertPoint(planet.Vel.Origin);
+                var center = orbs.convertPoint(orbs.model.Planets[idx].Vel.Origin);
 
                 //var sunVec = orbs.vecCirc(orbs.sunAngle + Math.PI, planet.Radius, center);
                 //var grd = ctx.createLinearGradient(sunVec.head.x, sunVec.head.y, planet.Radius, center.x, center.y, planet.Radius * 2);
                 //grd.addColorStop(0, planet.Color);
                 //grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
                 //ctx.fillStyle = grd;
-                orbs.ctx.fillStyle = planet.Color;
+                orbs.ctx.fillStyle = orbs.model.Planets[idx].Color;
 
                 orbs.ctx.beginPath();
-                orbs.ctx.arc(center.x, center.y, planet.Radius * orbs.unit, 0, 2 * Math.PI, false);
+                orbs.ctx.arc(center.x, center.y, orbs.model.Planets[idx].Radius * orbs.unit, 0, 2 * Math.PI, false);
                 orbs.ctx.closePath();
 
                 orbs.ctx.fill();
             }
         },
-        renderAsteroids: function (asteroids, planets, dt) {
-            for (var idx in asteroids) {
-                var asteroid = asteroids[idx];
-                orbs.animate.updateOrbital(asteroid, planets, dt);
-                orbs.animate.updateRotational(asteroid, dt);
+        renderAsteroids: function (dt) {
+            for (var idx in orbs.model.Asteroids) {
+                orbs.model.Asteroids[idx] = orbs.animate.updatePolygon(orbs.model.Asteroids[idx], orbs.model.Planets, dt);
 
                 var points = [];
-                for (var a in asteroid.Arms) {
-                    points.push(orbs.convertPoint(asteroid.Arms[a].Head));
+                for (var a in orbs.model.Asteroids[idx].Arms) {
+                    points.push(orbs.convertPoint(orbs.model.Asteroids[idx].Arms[a].Head));
                 }
 
                 //var sunVec = orbs.vecCirc(orbs.sunAngle + Math.PI, asteroid.Radius, center);
@@ -45,7 +42,7 @@ $(document).ready(function () {
                 //grd.addColorStop(0, asteroid.Color);
                 //grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
                 //ctx.fillStyle = grd;
-                orbs.ctx.fillStyle = asteroid.Color;
+                orbs.ctx.fillStyle = orbs.model.Asteroids[idx].Color;
 
                 orbs.ctx.beginPath();
                 orbs.ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
@@ -57,14 +54,13 @@ $(document).ready(function () {
                 orbs.ctx.fill();
             }
         },
-        renderShots: function (shots, planets, dt) {
-            for (var idx in shots) {
-                var shot = shots[idx];
-                orbs.animate.updateOrbital(shot, planets, dt);
+        renderShots: function (dt) {
+            for (var idx in orbs.model.Shots) {
+                orbs.model.Shots[idx] = orbs.animate.updateOrbital(orbs.model.Shots[idx], orbs.model.Planets, dt);
 
-                var center = orbs.convertPoint(shot.Vel.Origin);
+                var center = orbs.convertPoint(orbs.model.Shots[idx].Vel.Origin);
 
-                orbs.ctx.fillStyle = shot.Color;
+                orbs.ctx.fillStyle = orbs.model.Shots[idx].Color;
 
                 orbs.ctx.beginPath();
                 orbs.ctx.arc(center.x, center.y, 1.5 * orbs.unit, 0, 2 * Math.PI, false);
@@ -73,18 +69,16 @@ $(document).ready(function () {
                 orbs.ctx.fill();
             }
         },
-        renderShips: function (ships, planets, dt) {
-            for (var idx in ships) {
-                var ship = ships[idx];
-                orbs.animate.updateOrbital(ship, planets, dt);
-                orbs.animate.updateRotational(ship, dt);
+        renderShips: function (dt) {
+            for (var idx in orbs.model.Ships) {
+                orbs.model.Ships[idx] = orbs.animate.updatePolygon(orbs.model.Ships[idx], orbs.model.Planets, dt);
 
                 var points = [];
-                for (var a in ship.Arms) {
-                    points.push(orbs.convertPoint(ship.Arms[a].Head));
+                for (var a in orbs.model.Ships[idx].Arms) {
+                    points.push(orbs.convertPoint(orbs.model.Ships[idx].Arms[a].Head));
                 }
 
-                orbs.ctx.strokeStyle = ship.Color;
+                orbs.ctx.strokeStyle = orbs.model.Ships[idx].Color;
                 orbs.ctx.lineWidth = 1;
 
                 orbs.ctx.beginPath();
