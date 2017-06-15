@@ -5,7 +5,7 @@ $(document).ready(function () {
     orbs.canvas = document.getElementById('gamescreen'),
     orbs.ctx = document.getElementById('gamescreen').getContext('2d'),
     orbs.unit = 1,
-    orbs.ups;
+    orbs.updateRate;
     orbs.lastModelUpdate;
     orbs.lastClientUpdate;
     orbs.fps;
@@ -20,9 +20,9 @@ $(document).ready(function () {
         console.log(message);
     };
 
-    orbs.game.client.receiveUpdate = function (model, ups) {
+    orbs.game.client.receiveUpdate = function (model, updateRate) {
         orbs.model = model;
-        orbs.ups = ups;
+        orbs.updateRate = updateRate;
         orbs.lastModelUpdate = Date.now();
         console.log(orbs.model);
     }
@@ -31,16 +31,12 @@ $(document).ready(function () {
         requestAnimationFrame(orbs.renderFrame);
 
         var time = Date.now();
-
-        // fps counter
-        var delta = (time - orbs.lastClientUpdate) / 1000;
-        orbs.fps = 1 / delta;
-        orbs.lastClientUpdate = time;
-        if (orbs.model) {
-            console.log(orbs.model.Ships[0].Arms[0].Head.X + ", " + orbs.model.Ships[0].Arms[0].Head.Y);
+        if (orbs.lastClientUpdate) {
+            var dt = time - orbs.lastClientUpdate;
         }
+        orbs.lastClientUpdate = time;
 
-        var dt = time - orbs.lastModelUpdate;
+        console.log(dt);
 
         if (window.innerWidth >= window.innerHeight) {
             orbs.canvas.width = window.innerHeight;

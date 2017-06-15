@@ -13,7 +13,7 @@ $(document).ready(function () {
 
             // updates arms
             for (var i = 0; i < polygon.Arms.length; i++) {
-                polygon.Arms[i] = orbs.animate.translateVector(orbs.animate.rotateVector(polygon.Arms[i], polygon.DeltaRot), dx, dy);
+                polygon.Arms[i] = orbs.animate.translateVector(orbs.animate.rotateVector(polygon.Arms[i], polygon.DeltaRot * dt / orbs.updateRate), dx, dy);
             }
             return polygon;
         },
@@ -22,21 +22,25 @@ $(document).ready(function () {
                 // add gravity vector to accel
                 // add accel to vel
             }
-            var dx = dt * orbital.Vel.Delta.X / orbs.ups;
-            var dy = dt * orbital.Vel.Delta.Y / orbs.ups;
+            var dx = dt * orbital.Vel.Delta.X / orbs.updateRate;
+            var dy = dt * orbital.Vel.Delta.Y / orbs.updateRate;
             orbital.Vel = orbs.animate.translateVector(orbital.Vel, dx, dy);
             return orbital;
         },
         updateRotational: function (rotational, dt) {
-            rotational.ForwardAngle += dt * rotational.DeltaRot / orbs.ups;
+            rotational.ForwardAngle += rotational.DeltaRot * dt / orbs.updateRate;
             return rotational;
         },
         rotateVector: function (vector, angle) {
-            // add accelRot to 
+            // TODO: add accelRot to deltaRot
+            if (angle != 0) {
+                console.log("Hey, it moves!");
+            }
+            angle = -angle;
             vector.ForwardAngle += angle;
 
-            var newX = vector.Length * ((vector.Delta.X / vector.Length) * Math.cos(vector.ForwardAngle) - (vector.Delta.Y / vector.Length) * Math.sin(vector.ForwardAngle));
-            var newY = vector.Length * ((vector.Delta.X / vector.Length) * Math.sin(vector.ForwardAngle) + (vector.Delta.Y / vector.Length) * Math.cos(vector.ForwardAngle));
+            var newX = vector.Length * ((vector.Delta.X / vector.Length) * Math.cos(angle) - (vector.Delta.Y / vector.Length) * Math.sin(angle));
+            var newY = vector.Length * ((vector.Delta.X / vector.Length) * Math.sin(angle) + (vector.Delta.Y / vector.Length) * Math.cos(angle));
             vector.Delta.X = newX;
             vector.Delta.Y = newY;
             vector.Head.X = vector.Origin.X + vector.Delta.X;

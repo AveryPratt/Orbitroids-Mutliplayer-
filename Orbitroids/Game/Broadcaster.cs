@@ -12,7 +12,7 @@ namespace Orbitroids.Game
     public class Broadcaster
     {
         private readonly static Lazy<Broadcaster> instance = new Lazy<Broadcaster>(() => new Broadcaster());
-        private readonly TimeSpan broadcastInterval = TimeSpan.FromMilliseconds(1000 / 10);
+        private readonly TimeSpan broadcastInterval = TimeSpan.FromMilliseconds(1000 / 60);
         private readonly IHubContext hubContext;
         private Level level;
         private Timer broadcastLoop;
@@ -25,18 +25,14 @@ namespace Orbitroids.Game
             model = new Engine(level, broadcastInterval.TotalMilliseconds);
             // Start the broadcast loop
             broadcastLoop = new Timer(
-                RenderFrameServer,
+                RenderClientFrame,
                 null,
                 broadcastInterval,
                 broadcastInterval);
         }
-
-        public void RenderFrameServer(object state)
+        
+        public void RenderClientFrame(object state)
         {
-            if (model.Ships[0].Burning)
-            {
-
-            }
             model.Update();
             hubContext.Clients.All.receiveUpdate(model, broadcastInterval.TotalMilliseconds);
         }
@@ -77,14 +73,14 @@ namespace Orbitroids.Game
         public void Rotate(string direction, dynamic caller)
         {
             if (direction == "left")
-                model.Ships[0].IsRotating = "left";
+                model.Ships[0].RotDirection = "left";
             else if (direction == "right")
-                model.Ships[0].IsRotating = "right";
+                model.Ships[0].RotDirection = "right";
         }
 
         public void ReleaseRotate(string direction, dynamic caller)
         {
-            model.Ships[0].IsRotating = null;
+            model.Ships[0].RotDirection = null;
         }
 
         public void DampenControls(dynamic caller)

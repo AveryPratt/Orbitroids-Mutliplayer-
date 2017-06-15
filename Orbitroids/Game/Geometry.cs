@@ -68,14 +68,14 @@ namespace Orbitroids.Game
             }
             public double AccelRot { get; set; }
             public double DeltaRot { get; set; }
-            public string IsRotating { get; set; }
+            public string RotDirection { get; set; }
             public double RotPower { get; set; }
 
             protected void Rotate()
             {
-                if (this.IsRotating == "right")
+                if (this.RotDirection == "right")
                     this.AccelRot -= this.RotPower;
-                else if (this.IsRotating == "left")
+                else if (this.RotDirection == "left")
                     this.AccelRot += this.RotPower;
 
                 this.ForwardAngle += DeltaRot;

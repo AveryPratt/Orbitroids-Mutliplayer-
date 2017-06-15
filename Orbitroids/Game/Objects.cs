@@ -132,9 +132,9 @@ namespace Orbitroids.Game
                 else
                     maxRotPower = 1;
 
-                if (this.IsRotating == "right")
+                if (this.RotDirection == "right")
                     this.AccelRot = -this.RotPower;
-                else if (this.IsRotating == "left")
+                else if (this.RotDirection == "left")
                     this.AccelRot = this.RotPower;
                 if ((this.AccelRot < 0 && this.DeltaRot > -maxRotPower) || 
                     (this.AccelRot > 0 && this.DeltaRot < maxRotPower))
