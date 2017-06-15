@@ -21,13 +21,13 @@ namespace Orbitroids.Game
             this.MaxShots = 30;
             this.MaxAsteroids = 30;
 
-            Planet planet = new Planet(Math.Pow(framerate, 2), 50, color: "#0080ff");
+            Planet planet = new Planet(Math.Pow(this.Framerate, 2), 50, color: "#0080ff");
             Coordinate asteroidStartCoord = new Coordinate(0, 100);
             Coordinate shipStartCoord = new Coordinate(0, -100);
 
             this.Planets.Add(planet);
             this.Asteroids.Add(new Asteroid(VecCirc(3 * Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, planet), asteroidStartCoord)));
-            this.Ships.Add(new Ship(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord)));
+            this.Ships.Add(new Ship(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord), this.Framerate));
 
             double barycenterMass = 0;
             foreach (Planet p in this.Planets)

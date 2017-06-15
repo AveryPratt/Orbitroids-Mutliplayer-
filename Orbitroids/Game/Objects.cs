@@ -41,16 +41,17 @@ namespace Orbitroids.Game
         
         public class Ship : Orbital, IPolygon, IColorable
         {
-            public Ship(Vector vel, string color = "#ffffff", double forwardAngle = 0, double deltaRot = 0)
+            public Ship(Vector vel, double framerate, string color = "#ffffff", double forwardAngle = 0, double deltaRot = 0)
             {
+                this.Framerate = framerate;
                 this.Vel = vel;
                 this.Color = color;
 
                 this.Burning = false;
-                this.RotPower = .2;
-                this.ShotPower = 10;
-                this.BurnPower = 1;
-                this.DampenBurnPower = .3;
+                this.RotPower = .002 * this.Framerate;
+                this.ShotPower = .1 * this.Framerate;
+                this.BurnPower = .01 * this.Framerate;
+                this.DampenBurnPower = .003;
                 this.DampenBurn = false;
                 this.Loaded = false;
                 this.Destroyed = false;
@@ -60,7 +61,8 @@ namespace Orbitroids.Game
 
                 this.alignPoints();
             }
-            
+
+            public double Framerate { get; set; }
             public double BurnPower { get; set; }
             public double DampenBurnPower { get; set; }
             public double ShotPower { get; set; }
@@ -110,7 +112,7 @@ namespace Orbitroids.Game
                     // slows rotation to 0
                     if (this.DeltaRot < 0)
                     {
-                        this.AccelRot = this.RotPower / 2;
+                        this.AccelRot = this.RotPower / 3;
                         this.DeltaRot += this.AccelRot;
                         if (this.DeltaRot > 0)
                         {
@@ -120,7 +122,7 @@ namespace Orbitroids.Game
                     }
                     else if (this.DeltaRot > 0)
                     {
-                        this.AccelRot = -this.RotPower / 2;
+                        this.AccelRot = -this.RotPower / 3;
                         this.DeltaRot += this.AccelRot;
                         if (this.DeltaRot < 0)
                         {
@@ -130,7 +132,7 @@ namespace Orbitroids.Game
                     }
                 }
                 else
-                    maxRotPower = 1;
+                    maxRotPower = this.RotPower * 10;
 
                 if (this.RotDirection == "right")
                     this.AccelRot = -this.RotPower;
@@ -161,7 +163,7 @@ namespace Orbitroids.Game
             public Shot Shoot()
             {
                 this.Loaded = false;
-                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, 1));
+                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, this.Framerate / 10));
                 Vector projection = VecCirc(this.ForwardAngle, this.ShotPower, this.Arms.ToArray()[0].Head);
                 projection = AddVectors(projection, this.Vel);
                 return new Shot(projection);
