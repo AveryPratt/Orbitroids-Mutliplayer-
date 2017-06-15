@@ -11,9 +11,9 @@ namespace Orbitroids.Game
 {
     public class Engine
     {
-        public Engine(Level level, double milliseconds)
+        public Engine(Level level, double framerate)
         {
-            this.FPS = 1000 / milliseconds;
+            this.Framerate = framerate;
             this.Planets = new List<Planet>();
             this.Asteroids = new List<Asteroid>();
             this.Shots = new List<Shot>();
@@ -21,7 +21,7 @@ namespace Orbitroids.Game
             this.MaxShots = 30;
             this.MaxAsteroids = 30;
 
-            Planet planet = new Planet(50000 / this.FPS, 50, color: "#0080ff");
+            Planet planet = new Planet(Math.Pow(framerate, 2), 50, color: "#0080ff");
             Coordinate asteroidStartCoord = new Coordinate(0, 100);
             Coordinate shipStartCoord = new Coordinate(0, -100);
 
@@ -40,10 +40,10 @@ namespace Orbitroids.Game
         public List<Asteroid> Asteroids { get; set; }
         public List<Shot> Shots { get; set; }
         public List<Ship> Ships { get; set; }
-        public IMassive Barycenter { get; private set; }
+        public IMassive Barycenter { get; set; }
         public int MaxShots { get; set; }
         public int MaxAsteroids { get; set; }
-        public double FPS { get; private set; }
+        public double Framerate { get; set; }
 
         private void applyMotion()
         {
@@ -84,9 +84,7 @@ namespace Orbitroids.Game
                 foreach (Planet otherPlanet in this.Planets)
                 {
                     if (!ReferenceEquals(planet, otherPlanet))
-                    {
                         planet.ApplyGravity(otherPlanet);
-                    }
                 }
                 planet.ApplyMotion();
             }
@@ -103,18 +101,12 @@ namespace Orbitroids.Game
                 if (ship.Burning)
                 {
                     if (ship.DampenBurn)
-                    {
                         ship.Burn(ship.DampenBurnPower);
-                    }
                     else
-                    {
                         ship.Burn(ship.BurnPower);
-                    }
                 }
                 if (ship.Loaded)
-                {
                     this.Shots.Add(ship.Shoot());
-                }
                 ship.ApplyMotion();
             }
         }
@@ -135,9 +127,7 @@ namespace Orbitroids.Game
                 //int splits = Convert.ToInt32(Math.Floor(Math.Sqrt(asteroid.Radius / 2))); // 8-2 18-3 32-4 50-5
                 Asteroid[] newAsteroids = splitAsteroid(asteroid, 3, 50);
                 if(newAsteroids != null)
-                {
                     this.Asteroids.AddRange(newAsteroids);
-                }
             }
         }
 
