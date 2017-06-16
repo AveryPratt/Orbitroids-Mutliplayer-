@@ -22,67 +22,78 @@ namespace Orbitroids.Hubs
 
         public void Enter()
         {
-            broadcaster.Enter(Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.Enter(Clients.Caller, time);
             Clients.All.log("enter");
         }
 
         public void Pause()
         {
-            broadcaster.Pause(Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.Pause(Clients.Caller, time);
             Clients.All.log("pause");
         }
 
         public void Shoot()
         {
-            broadcaster.Shoot(Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.Shoot(Clients.Caller, time);
             Clients.All.log("shoot");
         }
 
         public void Burn()
         {
-            broadcaster.Burn(Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.Burn(Clients.Caller, time);
             Clients.All.log("burn");
         }
 
         public void ReleaseBurn()
         {
-            broadcaster.ReleaseBurn(Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.ReleaseBurn(Clients.Caller, time);
             Clients.All.log("release burn");
         }
 
         public void SlowBurn()
         {
-            broadcaster.SlowBurn(Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.SlowBurn(Clients.Caller, time);
             Clients.All.log("slow burn");
         }
 
         public void ReleaseSlowBurn()
         {
-            broadcaster.ReleaseSlowBurn(Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.ReleaseSlowBurn(Clients.Caller, time);
             Clients.All.log("release slow burn");
         }
 
         public void Rotate(string direction)
         {
-            broadcaster.Rotate(direction, Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.Rotate(direction, Clients.Caller, time);
             Clients.All.log("rotate " + direction);
         }
 
         public void ReleaseRotate(string direction)
         {
-            broadcaster.ReleaseRotate(direction, Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.ReleaseRotate(direction, Clients.Caller, time);
             Clients.All.log("release rotate " + direction);
         }
 
         public void DampenControls()
         {
-            broadcaster.DampenControls(Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.DampenControls(Clients.Caller, time);
             Clients.All.log("dampen conrols");
         }
 
         public void ReleaseDampenControls()
         {
-            broadcaster.ReleaseDampenControls(Clients.Caller);
+            DateTime time = DateTime.UtcNow;
+            broadcaster.ReleaseDampenControls(Clients.Caller, time);
             Clients.All.log("release dampen controls");
         }
     }

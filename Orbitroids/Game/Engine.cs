@@ -36,6 +36,9 @@ namespace Orbitroids.Game
             }
             this.Barycenter = new Planet(barycenterMass, 0);
         }
+
+        public DateTime LastUpdate { get; set; }
+        public Queue<Command> Commands { get; set; }
         public List<Planet> Planets { get; set; }
         public List<Asteroid> Asteroids { get; set; }
         public List<Shot> Shots { get; set; }
@@ -198,5 +201,19 @@ namespace Orbitroids.Game
             destroyExtraShots();
             destroyExtraAsteroids();
         }
+    }
+
+    public class Command
+    {
+        public Command(string cmd, DateTime time, dynamic caller)
+        {
+            this.Cmd = cmd;
+            this.Time = time;
+            this.Caller = caller;
+        }
+
+        public string Cmd { get; set; }
+        public DateTime Time { get; set; }
+        public dynamic Caller { get; set; }
     }
 }

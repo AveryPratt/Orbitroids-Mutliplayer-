@@ -12,7 +12,7 @@ namespace Orbitroids.Game
     public class Broadcaster
     {
         private readonly static Lazy<Broadcaster> instance = new Lazy<Broadcaster>(() => new Broadcaster());
-        private readonly TimeSpan broadcastInterval = TimeSpan.FromMilliseconds(1000 / 10);
+        private readonly TimeSpan broadcastInterval = TimeSpan.FromMilliseconds(1000 / 60);
         private readonly IHubContext hubContext;
         private Level level;
         private Timer broadcastLoop;
@@ -37,59 +37,83 @@ namespace Orbitroids.Game
             hubContext.Clients.All.receiveUpdate(model, broadcastInterval.TotalMilliseconds);
         }
 
-        public void Enter(dynamic caller)
+        public void Enter(dynamic caller, DateTime time)
         {
+            model.Commands.Enqueue(new Command("enter", time, caller));
         }
 
-        public void Pause(dynamic caller)
+        public void Pause(dynamic caller, DateTime time)
         {
+            model.Commands.Enqueue(new Command("pause", time, caller));
         }
 
-        public void Shoot(dynamic caller)
+        public void Shoot(dynamic caller, DateTime time)
         {
+            model.Commands.Enqueue(new Command("shoot", time, caller));
             model.Ships[0].Loaded = true;
         }
 
-        public void Burn(dynamic caller)
+        public void Burn(dynamic caller, DateTime time)
         {
+            model.Commands.Enqueue(new Command("burn", time, caller));
             model.Ships[0].Burning = true;
         }
 
-        public void ReleaseBurn(dynamic caller)
+        public void ReleaseBurn(dynamic caller, DateTime time)
         {
+            model.Commands.Enqueue(new Command("releaseBurn", time, caller));
             model.Ships[0].Burning = false;
         }
 
-        public void SlowBurn(dynamic caller)
+        public void SlowBurn(dynamic caller, DateTime time)
         {
+            model.Commands.Enqueue(new Command("slowBurn", time, caller));
             model.Ships[0].DampenBurn = true;
         }
 
-        public void ReleaseSlowBurn(dynamic caller)
+        public void ReleaseSlowBurn(dynamic caller, DateTime time)
         {
+            model.Commands.Enqueue(new Command("releaseSlowBurn", time, caller));
             model.Ships[0].DampenBurn = false;
         }
 
-        public void Rotate(string direction, dynamic caller)
+        public void Rotate(string direction, dynamic caller, DateTime time)
         {
             if (direction == "left")
+            {
+                model.Commands.Enqueue(new Command("rotateLeft", time, caller));
                 model.Ships[0].RotDirection = "left";
+            }
             else if (direction == "right")
+            {
+                model.Commands.Enqueue(new Command("rotateRight", time, caller));
                 model.Ships[0].RotDirection = "right";
+            }
         }
 
-        public void ReleaseRotate(string direction, dynamic caller)
+        public void ReleaseRotate(string direction, dynamic caller, DateTime time)
         {
-            model.Ships[0].RotDirection = null;
+            if (direction == "left")
+            {
+                model.Commands.Enqueue(new Command("releaseRotateLeft", time, caller));
+                model.Ships[0].RotDirection = null;
+            }
+            else if (direction == "right")
+            {
+                model.Commands.Enqueue(new Command("releaseRotateRight", time, caller));
+                model.Ships[0].RotDirection = null;
+            }
         }
 
-        public void DampenControls(dynamic caller)
+        public void DampenControls(dynamic caller, DateTime time)
         {
+            model.Commands.Enqueue(new Command("dampenRot", time, caller));
             model.Ships[0].DampenRot = true;
         }
 
-        public void ReleaseDampenControls(dynamic caller)
+        public void ReleaseDampenControls(dynamic caller, DateTime time)
         {
+            model.Commands.Enqueue(new Command("releaseDampenRot", time, caller));
             model.Ships[0].DampenRot = false;
         }
         public static Broadcaster Instance
