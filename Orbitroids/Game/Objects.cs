@@ -62,6 +62,7 @@ namespace Orbitroids.Game
                 this.alignPoints();
             }
 
+            public Queue<KeyValuePair<string, DateTime>> Commands { get; set; }
             public double Framerate { get; set; }
             public double BurnPower { get; set; }
             public double DampenBurnPower { get; set; }
@@ -148,12 +149,23 @@ namespace Orbitroids.Game
             }
             new public void ApplyMotion()
             {
-                this.Rotate();
-                this.Vel = AddVectors(this.Vel, this.Accel);
-                this.Vel = VecDelta(this.Vel.Delta, this.Vel.Head, this.Vel.DeltaRot);
+                while (this.Commands.Count > 0)
+                {
+                    this.executeCommand(this.Commands.Dequeue);
+                    this.applyMotion(dt);
+                }
+            }
+            private void applyMotion(int dt)
+            {
+                this.Rotate(dt);
+                Vector deltaAccel = VecCart(new Coordinate(this.Accel.Head.X * dt, this.Accel.Head.Y * dt), this.Accel.Origin, this.Accel.DeltaRot);
+                this.Vel = AddVectors(this.Vel, deltaAccel);
+                Vector deltaVel = VecCart(new Coordinate(this.Vel.Head.X * dt, this.Vel.Head.Y * dt), this.Vel.Origin, this.Vel.DeltaRot);
+                this.Vel = VecDelta(this.Vel.Delta, deltaVel.Head, this.Vel.DeltaRot);
+                this.TrueAnomaly = VecCart(this.Vel.Origin, new Coordinate());
+
                 this.Accel = new Vector();
                 this.AccelRot = 0;
-                this.TrueAnomaly = VecCart(this.Vel.Origin, new Coordinate());
                 this.alignPoints();
             }
             public void Burn(double force)

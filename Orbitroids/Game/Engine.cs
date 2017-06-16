@@ -184,6 +184,7 @@ namespace Orbitroids.Game
 
         public void Update()
         {
+            DateTime time = DateTime.UtcNow;
             applyMotion();
 
             Collisions.HandleCollisions(

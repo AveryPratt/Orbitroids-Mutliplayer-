@@ -20,69 +20,69 @@ namespace Orbitroids.Hubs
             broadcaster = caster;
         }
 
-        public void Enter()
+        public void Enter(double time)
         {
-            broadcaster.Enter(Clients.Caller);
+            broadcaster.Enter(Clients.Caller, time);
             Clients.All.log("enter");
         }
 
-        public void Pause()
+        public void Pause(double time)
         {
-            broadcaster.Pause(Clients.Caller);
+            broadcaster.Pause(Clients.Caller, time);
             Clients.All.log("pause");
         }
 
-        public void Shoot()
+        public void Shoot(double time)
         {
-            broadcaster.Shoot(Clients.Caller);
+            broadcaster.Shoot(Clients.Caller, time);
             Clients.All.log("shoot");
         }
 
-        public void Burn()
+        public void Burn(double time)
         {
-            broadcaster.Burn(Clients.Caller);
+            broadcaster.Burn(Clients.Caller, time);
             Clients.All.log("burn");
         }
 
-        public void ReleaseBurn()
+        public void ReleaseBurn(double time)
         {
-            broadcaster.ReleaseBurn(Clients.Caller);
+            broadcaster.ReleaseBurn(Clients.Caller, time);
             Clients.All.log("release burn");
         }
 
-        public void SlowBurn()
+        public void SlowBurn(double time)
         {
-            broadcaster.SlowBurn(Clients.Caller);
+            broadcaster.SlowBurn(Clients.Caller, time);
             Clients.All.log("slow burn");
         }
 
-        public void ReleaseSlowBurn()
+        public void ReleaseSlowBurn(double time)
         {
-            broadcaster.ReleaseSlowBurn(Clients.Caller);
+            broadcaster.ReleaseSlowBurn(Clients.Caller, time);
             Clients.All.log("release slow burn");
         }
 
-        public void Rotate(string direction)
+        public void Rotate(double time, string direction)
         {
-            broadcaster.Rotate(direction, Clients.Caller);
+            broadcaster.Rotate(Clients.Caller, time, direction);
             Clients.All.log("rotate " + direction);
         }
 
-        public void ReleaseRotate(string direction)
+        public void ReleaseRotate(double time, string direction)
         {
-            broadcaster.ReleaseRotate(direction, Clients.Caller);
+            broadcaster.ReleaseRotate(Clients.Caller, time, direction);
             Clients.All.log("release rotate " + direction);
         }
 
-        public void DampenControls()
+        public void DampenControls(double time)
         {
-            broadcaster.DampenControls(Clients.Caller);
+            broadcaster.DampenControls(Clients.Caller, time);
             Clients.All.log("dampen conrols");
         }
 
-        public void ReleaseDampenControls()
+        public void ReleaseDampenControls(double time)
         {
-            broadcaster.ReleaseDampenControls(Clients.Caller);
+            broadcaster.ReleaseDampenControls(Clients.Caller, time);
             Clients.All.log("release dampen controls");
         }
     }

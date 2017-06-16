@@ -37,60 +37,82 @@ namespace Orbitroids.Game
             hubContext.Clients.All.receiveUpdate(model, broadcastInterval.TotalMilliseconds);
         }
 
-        public void Enter(dynamic caller)
+        public void Enter(dynamic caller, double time)
         {
         }
 
-        public void Pause(dynamic caller)
+        public void Pause(dynamic caller, double time)
         {
         }
 
-        public void Shoot(dynamic caller)
+        public void Shoot(dynamic caller, double time)
         {
-            model.Ships[0].Loaded = true;
+            KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "shoot");
+            model.Ships[0].Commands.Enqueue(command);
         }
 
-        public void Burn(dynamic caller)
+        public void Burn(dynamic caller, double time)
         {
-            model.Ships[0].Burning = true;
+            KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "burn");
+            model.Ships[0].Commands.Enqueue(command);
         }
 
-        public void ReleaseBurn(dynamic caller)
+        public void ReleaseBurn(dynamic caller, double time)
         {
-            model.Ships[0].Burning = false;
+            KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "releaseBurn");
+            model.Ships[0].Commands.Enqueue(command);
         }
 
-        public void SlowBurn(dynamic caller)
+        public void SlowBurn(dynamic caller, double time)
         {
-            model.Ships[0].DampenBurn = true;
+            KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "slow");
+            model.Ships[0].Commands.Enqueue(command);
         }
 
-        public void ReleaseSlowBurn(dynamic caller)
+        public void ReleaseSlowBurn(dynamic caller, double time)
         {
-            model.Ships[0].DampenBurn = false;
+            KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "releaseSlow");
+            model.Ships[0].Commands.Enqueue(command);
         }
 
-        public void Rotate(string direction, dynamic caller)
+        public void Rotate(dynamic caller, double time, string direction)
         {
             if (direction == "left")
-                model.Ships[0].RotDirection = "left";
+            {
+                KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "rotateRight");
+                model.Ships[0].Commands.Enqueue(command);
+            }
             else if (direction == "right")
-                model.Ships[0].RotDirection = "right";
+            {
+                KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "rotateLeft");
+                model.Ships[0].Commands.Enqueue(command);
+            }
         }
 
-        public void ReleaseRotate(string direction, dynamic caller)
+        public void ReleaseRotate(dynamic caller, double time, string direction)
         {
-            model.Ships[0].RotDirection = null;
+            if (direction == "left")
+            {
+                KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "releaseRotateRight");
+                model.Ships[0].Commands.Enqueue(command);
+            }
+            else if (direction == "right")
+            {
+                KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "releaseRotateLeft");
+                model.Ships[0].Commands.Enqueue(command);
+            }
         }
 
-        public void DampenControls(dynamic caller)
+        public void DampenControls(dynamic caller, double time)
         {
-            model.Ships[0].DampenRot = true;
+            KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "dampenRot");
+            model.Ships[0].Commands.Enqueue(command);
         }
 
-        public void ReleaseDampenControls(dynamic caller)
+        public void ReleaseDampenControls(dynamic caller, double time)
         {
-            model.Ships[0].DampenRot = false;
+            KeyValuePair<double, string> command = new KeyValuePair<double, string>(time, "releaseDampenRot");
+            model.Ships[0].Commands.Enqueue(command);
         }
         public static Broadcaster Instance
         {
