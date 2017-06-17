@@ -19,6 +19,8 @@ namespace Orbitroids.Game
         private Engine model;
         public Broadcaster()
         {
+            this.Commands = new Queue<Command>();
+
             // Save our hub context so we can easily use it 
             // to send to its connected clients
             hubContext = GlobalHost.ConnectionManager.GetHubContext<GameHub>();
@@ -30,64 +32,69 @@ namespace Orbitroids.Game
                 broadcastInterval,
                 broadcastInterval);
         }
-        
+
+        public DateTime LastUpdate { get; set; }
+        public Queue<Command> Commands { get; set; }
+
         public void RenderClientFrame(object state)
         {
-            model.Update();
+            update(model);
             hubContext.Clients.All.receiveUpdate(model, broadcastInterval.TotalMilliseconds);
+        }
+
+        private void update(Engine model)
+        {
+            while (Commands.Count > 0)
+            {
+                Command command = Commands.Dequeue();
+                model.ExecuteCommand(command);
+            }
         }
 
         public void Enter(dynamic caller, DateTime time)
         {
-            model.Commands.Enqueue(new Command("enter", time, caller));
+            this.Commands.Enqueue(new Command("enter", time, caller));
         }
 
         public void Pause(dynamic caller, DateTime time)
         {
-            model.Commands.Enqueue(new Command("pause", time, caller));
+            this.Commands.Enqueue(new Command("pause", time, caller));
         }
 
         public void Shoot(dynamic caller, DateTime time)
         {
-            model.Commands.Enqueue(new Command("shoot", time, caller));
-            model.Ships[0].Loaded = true;
+            this.Commands.Enqueue(new Command("shoot", time, caller));
         }
 
         public void Burn(dynamic caller, DateTime time)
         {
-            model.Commands.Enqueue(new Command("burn", time, caller));
-            model.Ships[0].Burning = true;
+            this.Commands.Enqueue(new Command("burn", time, caller));
         }
 
         public void ReleaseBurn(dynamic caller, DateTime time)
         {
-            model.Commands.Enqueue(new Command("releaseBurn", time, caller));
-            model.Ships[0].Burning = false;
+            this.Commands.Enqueue(new Command("releaseBurn", time, caller));
         }
 
         public void SlowBurn(dynamic caller, DateTime time)
         {
-            model.Commands.Enqueue(new Command("slowBurn", time, caller));
-            model.Ships[0].DampenBurn = true;
+            this.Commands.Enqueue(new Command("slowBurn", time, caller));
         }
 
         public void ReleaseSlowBurn(dynamic caller, DateTime time)
         {
-            model.Commands.Enqueue(new Command("releaseSlowBurn", time, caller));
-            model.Ships[0].DampenBurn = false;
+            this.Commands.Enqueue(new Command("releaseSlowBurn", time, caller));
         }
 
         public void Rotate(string direction, dynamic caller, DateTime time)
         {
             if (direction == "left")
             {
-                model.Commands.Enqueue(new Command("rotateLeft", time, caller));
-                model.Ships[0].RotDirection = "left";
+                this.Commands.Enqueue(new Command("rotateLeft", time, caller));
             }
             else if (direction == "right")
             {
-                model.Commands.Enqueue(new Command("rotateRight", time, caller));
-                model.Ships[0].RotDirection = "right";
+                this.Commands.Enqueue(new Command("rotateRight", time, caller));
             }
         }
 
@@ -95,26 +102,22 @@ namespace Orbitroids.Game
         {
             if (direction == "left")
             {
-                model.Commands.Enqueue(new Command("releaseRotateLeft", time, caller));
-                model.Ships[0].RotDirection = null;
+                this.Commands.Enqueue(new Command("releaseRotateLeft", time, caller));
             }
             else if (direction == "right")
             {
-                model.Commands.Enqueue(new Command("releaseRotateRight", time, caller));
-                model.Ships[0].RotDirection = null;
+                this.Commands.Enqueue(new Command("releaseRotateRight", time, caller));
             }
         }
 
         public void DampenControls(dynamic caller, DateTime time)
         {
-            model.Commands.Enqueue(new Command("dampenRot", time, caller));
-            model.Ships[0].DampenRot = true;
+            this.Commands.Enqueue(new Command("dampenRot", time, caller));
         }
 
         public void ReleaseDampenControls(dynamic caller, DateTime time)
         {
-            model.Commands.Enqueue(new Command("releaseDampenRot", time, caller));
-            model.Ships[0].DampenRot = false;
+            this.Commands.Enqueue(new Command("releaseDampenRot", time, caller));
         }
         public static Broadcaster Instance
         {

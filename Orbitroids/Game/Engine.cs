@@ -13,7 +13,6 @@ namespace Orbitroids.Game
     {
         public Engine(Level level, double framerate)
         {
-            this.Framerate = framerate;
             this.Planets = new List<Planet>();
             this.Asteroids = new List<Asteroid>();
             this.Shots = new List<Shot>();
@@ -21,13 +20,13 @@ namespace Orbitroids.Game
             this.MaxShots = 30;
             this.MaxAsteroids = 30;
 
-            Planet planet = new Planet(Math.Pow(this.Framerate, 2), 50, color: "#0080ff");
+            Planet planet = new Planet(Math.Pow(framerate, 2), 50, color: "#0080ff");
             Coordinate asteroidStartCoord = new Coordinate(0, 100);
             Coordinate shipStartCoord = new Coordinate(0, -100);
 
             this.Planets.Add(planet);
             this.Asteroids.Add(new Asteroid(VecCirc(3 * Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, planet), asteroidStartCoord)));
-            this.Ships.Add(new Ship(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord), this.Framerate));
+            this.Ships.Add(new Ship(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord), framerate));
 
             double barycenterMass = 0;
             foreach (Planet p in this.Planets)
@@ -38,7 +37,6 @@ namespace Orbitroids.Game
         }
 
         public DateTime LastUpdate { get; set; }
-        public Queue<Command> Commands { get; set; }
         public List<Planet> Planets { get; set; }
         public List<Asteroid> Asteroids { get; set; }
         public List<Shot> Shots { get; set; }
@@ -46,17 +44,78 @@ namespace Orbitroids.Game
         public IMassive Barycenter { get; set; }
         public int MaxShots { get; set; }
         public int MaxAsteroids { get; set; }
-        public double Framerate { get; set; }
 
-        private void applyMotion()
+        internal void ExecuteCommand(Command command)
         {
-            applyShipMotion();
-            applyPlanetMotion();
-            applyShotMotion();
-            applyAsteroidMotion();
+            switch (command.Cmd)
+            {
+                case "enter":
+                    break;
+                case "pause":
+                    break;
+                case "shoot":
+                    this.Ships[0].Loaded = true;
+                    break;
+                case "burn":
+                    this.Ships[0].Burning = true;
+                    break;
+                case "releaseBurn":
+                    this.Ships[0].Burning = false;
+                    break;
+                case "slowBurn":
+                    this.Ships[0].DampenBurn = true;
+                    break;
+                case "releaseSlowBurn":
+                    this.Ships[0].DampenBurn = false;
+                    break;
+                case "rotateLeft":
+                    this.Ships[0].RotDirection = "left";
+                    break;
+                case "rotateRight":
+                    this.Ships[0].RotDirection = "right";
+                    break;
+                case "releaseRotateLeft":
+                    this.Ships[0].RotDirection = null;
+                    break;
+                case "releaseRotateRight":
+                    this.Ships[0].RotDirection = null;
+                    break;
+                case "dampenRot":
+                    this.Ships[0].DampenRot = true;
+                    break;
+                case "releaseDampenRot":
+                    this.Ships[0].DampenRot = false;
+                    break;
+                default:
+                    break;
+            }
+
+            TimeSpan dt = command.Time.Subtract(this.LastUpdate);
+            this.LastUpdate = command.Time;
+            this.applyMotion(dt);
+
+            Collisions.HandleCollisions(
+                this.Shots,
+                this.Asteroids,
+                this.Planets,
+                this.Ships,
+                this.Barycenter,
+                this.destroyShots,
+                this.destroyShips,
+                this.destroyAsteroids);
+            this.destroyExtraShots();
+            this.destroyExtraAsteroids();
         }
 
-        private void applyAsteroidMotion()
+        private void applyMotion(TimeSpan dt)
+        {
+            applyShipMotion(dt);
+            applyPlanetMotion(dt);
+            applyShotMotion(dt);
+            applyAsteroidMotion(dt);
+        }
+
+        private void applyAsteroidMotion(TimeSpan dt)
         {
             foreach (Asteroid asteroid in this.Asteroids)
             {
@@ -64,11 +123,11 @@ namespace Orbitroids.Game
                 {
                     asteroid.ApplyGravity(planet);
                 }
-                asteroid.ApplyMotion();
+                asteroid.ApplyMotion(dt);
             }
         }
 
-        private void applyShotMotion()
+        private void applyShotMotion(TimeSpan dt)
         {
             foreach (Shot shot in this.Shots)
             {
@@ -76,11 +135,11 @@ namespace Orbitroids.Game
                 {
                     shot.ApplyGravity(planet);
                 }
-                shot.ApplyMotion();
+                shot.ApplyMotion(dt);
             }
         }
 
-        private void applyPlanetMotion()
+        private void applyPlanetMotion(TimeSpan dt)
         {
             foreach (Planet planet in this.Planets)
             {
@@ -89,11 +148,11 @@ namespace Orbitroids.Game
                     if (!ReferenceEquals(planet, otherPlanet))
                         planet.ApplyGravity(otherPlanet);
                 }
-                planet.ApplyMotion();
+                planet.ApplyMotion(dt);
             }
         }
 
-        private void applyShipMotion()
+        private void applyShipMotion(TimeSpan dt)
         {
             foreach (Ship ship in this.Ships)
             {
@@ -110,7 +169,7 @@ namespace Orbitroids.Game
                 }
                 if (ship.Loaded)
                     this.Shots.Add(ship.Shoot());
-                ship.ApplyMotion();
+                ship.ApplyMotion(dt);
             }
         }
 
@@ -183,23 +242,6 @@ namespace Orbitroids.Game
                 remainingAsteroids.RemoveRange(this.MaxAsteroids, this.Asteroids.Count() - this.MaxAsteroids);
                 this.Asteroids = remainingAsteroids;
             }
-        }
-
-        public void Update()
-        {
-            applyMotion();
-
-            Collisions.HandleCollisions(
-                this.Shots,
-                this.Asteroids,
-                this.Planets,
-                this.Ships,
-                this.Barycenter,
-                this.destroyShots,
-                this.destroyShips,
-                this.destroyAsteroids);
-            destroyExtraShots();
-            destroyExtraAsteroids();
         }
     }
 
