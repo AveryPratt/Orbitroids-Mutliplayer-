@@ -19,12 +19,10 @@ namespace Orbitroids.Game
             this.Ships = new List<Ship>();
 
             Planet planet = new Planet(300, 50, color: "#0080ff");
-            Coordinate asteroidStartCoord = new Coordinate(0, 100);
-            Coordinate shipStartCoord = new Coordinate(0, -100);
 
             this.Planets.Add(planet);
-            this.Asteroids.Add(new Asteroid(VecCirc(3 * Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, planet), asteroidStartCoord)));
-            this.Ships.Add(new Ship(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, planet), shipStartCoord)));
+            this.Asteroids.Add(new Asteroid(VecCirc()));
+            this.Ships.Add(new Ship(VecCirc()));
 
             int barycenterMass = 0;
             foreach (Planet p in this.Planets)
@@ -32,12 +30,30 @@ namespace Orbitroids.Game
                 barycenterMass += p.Mass;
             }
             this.Barycenter = new Planet(barycenterMass, 0);
+
+            this.SetShip(this.Ships[0]);
+            this.SetAsteroid(this.Asteroids[0]);
         }
         public List<Planet> Planets { get; set; }
         public List<Asteroid> Asteroids { get; set; }
         public List<Shot> Shots { get; set; }
         public List<Ship> Ships { get; set; }
         public IMassive Barycenter { get; private set; }
+
+        public void SetShip(Ship ship)
+        {
+            Coordinate shipStartCoord = new Coordinate(0, -100);
+            ship.Vel = VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, this.Barycenter), shipStartCoord);
+            ship.DeltaRot = 0;
+        }
+
+        public void SetAsteroid(Asteroid asteroid)
+        {
+            Coordinate asteroidStartCoord = new Coordinate(0, 100);
+            asteroid.Vel = VecCirc(3 * Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, this.Barycenter), asteroidStartCoord);
+            Random rand = new Random();
+            asteroid.DeltaRot = (rand.NextDouble() - .5) / 10;
+        }
 
         private void applyMotion()
         {
@@ -78,9 +94,7 @@ namespace Orbitroids.Game
                 foreach (Planet otherPlanet in this.Planets)
                 {
                     if (!ReferenceEquals(planet, otherPlanet))
-                    {
                         planet.ApplyGravity(otherPlanet);
-                    }
                 }
                 planet.ApplyMotion();
             }
@@ -90,6 +104,12 @@ namespace Orbitroids.Game
         {
             foreach (Ship ship in this.Ships)
             {
+                if (ship.Destroyed)
+                {
+                    ship.Vel = null;
+                    continue;
+                }
+
                 foreach (Planet planet in this.Planets)
                 {
                     ship.ApplyGravity(planet);
@@ -97,18 +117,13 @@ namespace Orbitroids.Game
                 if (ship.Burning)
                 {
                     if (ship.DampenBurn)
-                    {
                         ship.Burn(ship.DampenBurnPower);
-                    }
                     else
-                    {
                         ship.Burn(ship.BurnPower);
-                    }
                 }
                 if (ship.Loaded)
-                {
                     this.Shots.Add(ship.Shoot());
-                }
+
                 ship.ApplyMotion();
             }
         }
@@ -126,12 +141,9 @@ namespace Orbitroids.Game
             foreach (Asteroid asteroid in asteroids)
             {
                 this.Asteroids.Remove(asteroid);
-                //int splits = Convert.ToInt32(Math.Floor(Math.Sqrt(asteroid.Radius / 2))); // 8-2 18-3 32-4 50-5
                 Asteroid[] newAsteroids = splitAsteroid(asteroid, 3, 50);
                 if(newAsteroids != null)
-                {
                     this.Asteroids.AddRange(newAsteroids);
-                }
             }
         }
 
@@ -148,7 +160,7 @@ namespace Orbitroids.Game
                     double area = rand.Next(1, 4) * .5 * remainingArea / (splits - i);
                     double angle = 2 * Math.PI / (splits - i);
                     double speed = power / area;
-                    newAsteroids[i] = new Asteroid(AddVectors(asteroid.Vel, VecCirc(angle, speed)), Math.Sqrt(area), asteroid.Roughness, asteroid.Color, asteroid.DeltaRot);
+                    newAsteroids[i] = new Asteroid(AddVectors(asteroid.Vel, VecCirc(angle, speed)), Math.Sqrt(area), asteroid.Roughness, asteroid.Color, (rand.NextDouble() - .5) / 10);
                     remainingArea -= area;
                 }
                 return newAsteroids;
@@ -167,6 +179,7 @@ namespace Orbitroids.Game
         public void Update()
         {
             applyMotion();
+            setNewWave();
             Collisions.HandleCollisions(
                 this.Shots,
                 this.Asteroids,
@@ -176,6 +189,27 @@ namespace Orbitroids.Game
                 this.destroyShots,
                 this.destroyShips,
                 this.destroyAsteroids);
+        }
+
+        private void setNewWave()
+        {
+            bool toLaunch = false;
+            if (this.Asteroids.Count == 0)
+                toLaunch = true;
+            else
+            {
+                foreach (Asteroid asteroid in this.Asteroids)
+                {
+                    if (Math.Abs(asteroid.Vel.Origin.X) > 500 || Math.Abs(asteroid.Vel.Origin.Y) > 500)
+                        toLaunch = true;
+                }
+            }
+            if (toLaunch)
+            {
+                Asteroid newAst = new Asteroid(VecCirc());
+                this.Asteroids.Add(newAst);
+                SetAsteroid(newAst);
+            }
         }
     }
 }

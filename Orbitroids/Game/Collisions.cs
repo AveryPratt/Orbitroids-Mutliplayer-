@@ -21,23 +21,22 @@ namespace Orbitroids.Game
             CheckShotAsteroidCollision(shots, asteroids, destroyShots, destroyAsteroids);
             CheckShotShipCollision(shots, ships, destroyShots, destroyShips);
             CheckShotPlanetCollision(shots, planets, destroyShots);
-            CheckAsteroidShipCollision(asteroids, ships, destroyAsteroids);
+            CheckAsteroidShipCollision(asteroids, ships, destroyAsteroids, destroyShips);
             CheckAsteroidPlanetCollision(asteroids, planets, destroyAsteroids);
             CheckShipPlanetCollision(ships, planets, destroyShips);
         }
 
-        private static void CheckShipEscaped(IEnumerable<Ship> ships, DestroyShips destroyShips)
+        private static void CheckShotEscaped(IEnumerable<Shot> shots, DestroyShots destroyShots, IMassive barycenter)
         {
-            List<Ship> doomedShips = new List<Ship>();
-            foreach (Ship ship in ships)
+            List<Shot> doomedShots = new List<Shot>();
+            foreach (Shot shot in shots)
             {
-                if (Math.Abs(ship.Vel.Origin.X) > 500 || 
-                    Math.Abs(ship.Vel.Origin.Y) > 500)
+                if ((Math.Abs(shot.Vel.Origin.X) > 300 || Math.Abs(shot.Vel.Origin.Y) > 300) && Physics.GetEscapeVelocity(shot.Vel.Origin, barycenter) <= shot.Vel.Length)
                 {
-                    doomedShips.Add(ship);
+                    doomedShots.Add(shot);
                 }
             }
-            destroyShips(doomedShips);
+            destroyShots(doomedShots);
         }
 
         private static void CheckAsteroidEscaped(IEnumerable<Asteroid> asteroids, DestroyAsteroids destroyAsteroids, IMassive barycenter)
@@ -53,17 +52,21 @@ namespace Orbitroids.Game
             destroyAsteroids(doomedAsteroids);
         }
 
-        private static void CheckShotEscaped(IEnumerable<Shot> shots, DestroyShots destroyShots, IMassive barycenter)
+        private static void CheckShipEscaped(IEnumerable<Ship> ships, DestroyShips destroyShips)
         {
-            List<Shot> doomedShots = new List<Shot>();
-            foreach (Shot shot in shots)
+            List<Ship> doomedShips = new List<Ship>();
+            foreach (Ship ship in ships)
             {
-                if ((Math.Abs(shot.Vel.Origin.X) > 300 || Math.Abs(shot.Vel.Origin.Y) > 300) && Physics.GetEscapeVelocity(shot.Vel.Origin, barycenter) <= shot.Vel.Length)
+                if (!ship.Destroyed)
                 {
-                    doomedShots.Add(shot);
+                    if (Math.Abs(ship.Vel.Origin.X) > 500 ||
+                        Math.Abs(ship.Vel.Origin.Y) > 500)
+                    {
+                        doomedShips.Add(ship);
+                    }
                 }
             }
-            destroyShots(doomedShots);
+            destroyShips(doomedShips);
         }
 
         public static void CheckShotAsteroidCollision(IEnumerable<Shot> shots, IEnumerable<Asteroid> asteroids, DestroyShots destroyShots, DestroyAsteroids destroyAsteroids) // 50 * 30 = 1500 / 2082
@@ -93,10 +96,13 @@ namespace Orbitroids.Game
             {
                 foreach (Ship ship in ships)
                 {
-                    if (checkCoordinatePolygonCollision(shot.Vel.Origin, ship))
+                    if (!ship.Destroyed)
                     {
-                        doomedShots.Add(shot);
-                        doomedShips.Add(ship);
+                        if (checkCoordinatePolygonCollision(shot.Vel.Origin, ship))
+                        {
+                            doomedShots.Add(shot);
+                            doomedShips.Add(ship);
+                        }
                     }
                 }
             }
@@ -120,7 +126,7 @@ namespace Orbitroids.Game
             destroyShots(doomedShots);
         }
 
-        public static void CheckAsteroidShipCollision(IEnumerable<Asteroid> asteroids, IEnumerable<Ship> ships, DestroyAsteroids destroyAsteroids) // 30 * 4 = 120 / 2082
+        public static void CheckAsteroidShipCollision(IEnumerable<Asteroid> asteroids, IEnumerable<Ship> ships, DestroyAsteroids destroyAsteroids, DestroyShips destroyShips) // 30 * 4 = 120 / 2082
         {
             List<Asteroid> doomedAsteroids = new List<Asteroid>();
             List<Ship> doomedShips = new List<Ship>();
@@ -128,14 +134,18 @@ namespace Orbitroids.Game
             {
                 foreach (Ship ship in ships)
                 {
-                    if (checkMultiplePolygonCollision(asteroid, ship))
+                    if (!ship.Destroyed)
                     {
-                        doomedAsteroids.Add(asteroid);
-                        doomedShips.Add(ship);
+                        if (checkMultiplePolygonCollision(asteroid, ship))
+                        {
+                            doomedAsteroids.Add(asteroid);
+                            doomedShips.Add(ship);
+                        }
                     }
                 }
             }
             destroyAsteroids(doomedAsteroids);
+            destroyShips(doomedShips);
         }
 
         public static void CheckAsteroidPlanetCollision(IEnumerable<Asteroid> asteroids, IEnumerable<Planet> planets, DestroyAsteroids destroyAsteroids) // 30 * 3 = 90 / 2082
@@ -159,11 +169,14 @@ namespace Orbitroids.Game
             List<Ship> doomedShips = new List<Ship>();
             foreach (Ship ship in ships)
             {
-                foreach (Planet planet in planets)
+                if (!ship.Destroyed)
                 {
-                    if (checkPolygonCircleCollision(ship, planet))
+                    foreach (Planet planet in planets)
                     {
-                        doomedShips.Add(ship);
+                        if (checkPolygonCircleCollision(ship, planet))
+                        {
+                            doomedShips.Add(ship);
+                        }
                     }
                 }
             }
@@ -207,31 +220,54 @@ namespace Orbitroids.Game
             if (VecCart(polyRed.Vel.Origin, polyBlue.Vel.Origin).Length > polyRed.Radius + polyBlue.Radius)
                 return false;
 
-            // modified from solution: https://gamedev.stackexchange.com/questions/26004/how-to-detect-2d-line-on-line-collision
-            
-            IEnumerable<Vector> red = polyRed.ConstructSides();
-            IEnumerable<Vector> blue = polyBlue.ConstructSides();
-
-            foreach (Vector r in red)
+            foreach (Vector arm in polyBlue.Arms)
             {
-                foreach (Vector b in blue)
+                if (checkCoordinatePolygonCollision(arm.Head, polyRed))
                 {
-                    double denominator = ((r.Origin.X - r.Head.X) * (b.Origin.Y - b.Head.Y)) - ((r.Origin.Y - r.Head.Y) * (b.Origin.X - b.Head.X));
-                    double numerator1 = ((r.Head.Y - b.Head.Y) * (b.Origin.X - b.Head.X)) - ((r.Head.X - b.Head.X) * (b.Origin.Y - b.Head.Y));
-                    double numerator2 = ((r.Head.Y - b.Head.Y) * (r.Origin.X - r.Head.X)) - ((r.Head.X - b.Head.X) * (r.Origin.Y - r.Head.Y));
-                    
-                    if (denominator == 0)
-                        return numerator1 == 0 && numerator2 == 0;
-
-                    double x = numerator1 / denominator;
-                    double y = numerator2 / denominator;
-
-                    if ((x >= 0 && x <= 1) && (y >= 0 && y <= 1))
-                        return true;
+                    return true;
                 }
             }
-            return true;
+
+            foreach (Vector arm in polyRed.Arms)
+            {
+                if (checkCoordinatePolygonCollision(arm.Head, polyBlue))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
+
+        //private static bool checkMultiplePolygonCollision(IPolygon polyRed, IPolygon polyBlue)
+        //{
+        //    if (VecCart(polyRed.Vel.Origin, polyBlue.Vel.Origin).Length > polyRed.Radius + polyBlue.Radius)
+        //        return false;
+
+        //    // modified from solution: https://gamedev.stackexchange.com/questions/26004/how-to-detect-2d-line-on-line-collision
+
+        //    IEnumerable<Vector> red = polyRed.ConstructSides();
+        //    IEnumerable<Vector> blue = polyBlue.ConstructSides();
+
+        //    foreach (Vector r in red)
+        //    {
+        //        foreach (Vector b in blue)
+        //        {
+        //            double denominator = ((r.Origin.X - r.Head.X) * (b.Origin.Y - b.Head.Y)) - ((r.Origin.Y - r.Head.Y) * (b.Origin.X - b.Head.X));
+        //            double numerator1 = ((r.Head.Y - b.Head.Y) * (b.Origin.X - b.Head.X)) - ((r.Head.X - b.Head.X) * (b.Origin.Y - b.Head.Y));
+        //            double numerator2 = ((r.Head.Y - b.Head.Y) * (r.Origin.X - r.Head.X)) - ((r.Head.X - b.Head.X) * (r.Origin.Y - r.Head.Y));
+
+        //            if (denominator == 0)
+        //                return numerator1 == 0 && numerator2 == 0;
+
+        //            double x = numerator1 / denominator;
+        //            double y = numerator2 / denominator;
+
+        //            if ((x >= 0 && x <= 1) && (y >= 0 && y <= 1))
+        //                return true;
+        //        }
+        //    }
+        //    return true;
+        //}
 
         private static bool checkCoordinatePolygonCollision(Coordinate coord, IPolygon polygon)
         {

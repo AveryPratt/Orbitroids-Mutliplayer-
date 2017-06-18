@@ -45,17 +45,19 @@ namespace Orbitroids.Game
             {
                 this.Vel = vel;
                 this.Color = color;
+                this.ForwardAngle = forwardAngle;
+                this.DeltaRot = deltaRot;
 
                 this.Burning = false;
-                this.RotPower = .02;
-                this.BurnPower = .3;
-                this.DampenBurnPower = .1;
+                this.RotPower = .01;
+                this.BurnPower = .2;
+                this.DampenBurnPower = .075;
                 this.DampenBurn = false;
                 this.Loaded = false;
                 this.Destroyed = false;
                 this.TrueAnomaly = new Vector();
                 this.Accel = VecCirc();
-                this.MaxRadius = 10;
+                this.Radius = 10;
 
                 this.alignPoints();
             }
@@ -74,7 +76,6 @@ namespace Orbitroids.Game
             public bool DampenBurn { get; set; }
             public bool Loaded { get; set; }
             public bool Destroyed { get; set; }
-            public int MaxRadius { get; set; }
             public IEnumerable<Vector> Arms { get; set; }
             public Vector TrueAnomaly { get; set; }
 
@@ -93,10 +94,10 @@ namespace Orbitroids.Game
             {
                 this.Arms = new Vector[4]
                 {
-                    VecCirc(this.ForwardAngle, this.MaxRadius, this.Vel.Origin),
-                    VecCirc(this.ForwardAngle + 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin),
+                    VecCirc(this.ForwardAngle, this.Radius, this.Vel.Origin),
+                    VecCirc(this.ForwardAngle + 5 * Math.PI / 6, this.Radius, this.Vel.Origin),
                     VecCirc(this.ForwardAngle - Math.PI, 0, this.Vel.Origin),
-                    VecCirc(this.ForwardAngle - 5 * Math.PI / 6, this.MaxRadius, this.Vel.Origin)
+                    VecCirc(this.ForwardAngle - 5 * Math.PI / 6, this.Radius, this.Vel.Origin)
                 };
             }
             new protected void Rotate()

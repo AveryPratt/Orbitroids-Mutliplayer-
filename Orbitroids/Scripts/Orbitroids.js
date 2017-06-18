@@ -57,7 +57,7 @@ $(document).ready(function () {
                 orbs.ctx.fillStyle = shot.Color;
 
                 orbs.ctx.beginPath();
-                orbs.ctx.arc(center.x, center.y, 1.5 * orbs.unit, 0, 2 * Math.PI, false);
+                orbs.ctx.arc(center.x, center.y, 1.5, 0, 2 * Math.PI, false);
                 orbs.ctx.closePath();
 
                 orbs.ctx.fill();
@@ -67,22 +67,23 @@ $(document).ready(function () {
             for (var idx in ships) {
                 var ship = ships[idx];
 
-                var points = [];
-                for (var a in ship.Arms) {
-                    points.push(orbs.convertPoint(ship.Arms[a].Head));
+                if (!ship.Destroyed) {
+                    var points = [];
+                    for (var a in ship.Arms) {
+                        points.push(orbs.convertPoint(ship.Arms[a].Head));
+                    }
+
+                    orbs.ctx.strokeStyle = ship.Color;
+                    orbs.ctx.lineWidth = 1;
+
+                    orbs.ctx.beginPath();
+                    orbs.ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+                    for (var p in points) {
+                        orbs.ctx.lineTo(points[p].x, points[p].y);
+                    }
+                    orbs.ctx.closePath();
+                    orbs.ctx.stroke();
                 }
-
-                orbs.ctx.strokeStyle = ship.Color;
-                orbs.ctx.lineWidth = 1;
-
-                orbs.ctx.beginPath();
-                orbs.ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
-                for (var p in points) {
-                    orbs.ctx.lineTo(points[p].x, points[p].y);
-                }
-                orbs.ctx.closePath();
-
-                orbs.ctx.stroke();
             }
         }
     };

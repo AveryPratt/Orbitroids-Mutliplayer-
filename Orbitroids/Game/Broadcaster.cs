@@ -43,6 +43,9 @@ namespace Orbitroids.Game
 
         public void Enter(dynamic caller)
         {
+            model.Ships[0].Destroyed = false;
+            model.Ships[0].Loaded = false;
+            model.SetShip(model.Ships[0]);
         }
 
         public void Pause(dynamic caller)
