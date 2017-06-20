@@ -35,7 +35,7 @@ $(document).ready(function () {
         orbs.drawings.renderAsteroids(model.Asteroids, orbs.ctx);
         orbs.drawings.renderShots(model.Shots, orbs.ctx);
         orbs.drawings.renderShips(model.Ships, orbs.ctx);
-        console.log(model);
+        console.log(model.Asteroids.length);
     }
 
     $(document).keydown(function (event) {

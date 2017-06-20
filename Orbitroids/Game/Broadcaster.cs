@@ -33,10 +33,6 @@ namespace Orbitroids.Game
 
         public void RenderFrame(object state)
         {
-            if (model.Ships[0].Burning)
-            {
-
-            }
             model.Update();
             hubContext.Clients.All.renderFrame(model);
         }

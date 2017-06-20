@@ -13,7 +13,7 @@ namespace Orbitroids.Game
         public delegate void DestroyAsteroids(IEnumerable<Asteroid> asteroids);
         public delegate void DestroyShips(IEnumerable<Ship> ships);
 
-        public static void HandleCollisions(IEnumerable<Shot> shots, IEnumerable<Asteroid> asteroids, IEnumerable<Planet> planets, IEnumerable<Ship> ships, IMassive barycenter, DestroyShots destroyShots, DestroyShips destroyShips, DestroyAsteroids destroyAsteroids)
+        public static void HandleCollisions(IEnumerable<Shot> shots, IEnumerable<Asteroid> asteroids, IEnumerable<Planet> planets, IEnumerable<Ship> ships, IMassive barycenter, DestroyShots destroyShots, DestroyShips destroyShips, DestroyAsteroids destroyAsteroids, int maxShots, int maxAsteroids)
         {
             CheckShotEscaped(shots, destroyShots, barycenter);
             CheckAsteroidEscaped(asteroids, destroyAsteroids, barycenter);
@@ -24,6 +24,8 @@ namespace Orbitroids.Game
             CheckAsteroidShipCollision(asteroids, ships, destroyAsteroids, destroyShips);
             CheckAsteroidPlanetCollision(asteroids, planets, destroyAsteroids);
             CheckShipPlanetCollision(ships, planets, destroyShips);
+            CheckMaxShots(shots, maxShots);
+            CheckMaxAsteroids(asteroids, maxAsteroids);
         }
 
         private static void CheckShotEscaped(IEnumerable<Shot> shots, DestroyShots destroyShots, IMassive barycenter)
@@ -300,6 +302,18 @@ namespace Orbitroids.Game
             if (Math.Round(total) == 0)
                 return false;
             return true;
+        }
+
+        private static void CheckMaxShots(IEnumerable<Shot> shots, int maxNumber)
+        {
+            if (shots.Count() > maxNumber)
+                ((List<Shot>)shots).RemoveRange(0, shots.Count() - maxNumber);
+        }
+
+        private static void CheckMaxAsteroids(IEnumerable<Asteroid> asteroids, int maxNumber)
+        {
+            if (asteroids.Count() > maxNumber)
+                ((List<Asteroid>)asteroids).RemoveRange(maxNumber, asteroids.Count() - maxNumber);
         }
     }
 }

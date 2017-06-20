@@ -17,11 +17,11 @@ namespace Orbitroids.Game
             this.Asteroids = new List<Asteroid>();
             this.Shots = new List<Shot>();
             this.Ships = new List<Ship>();
+            this.MaxShots = 30;
+            this.MaxAsteroids = 30;
 
-            Planet planet = new Planet(300, 50, color: "#0080ff");
-
-            this.Planets.Add(planet);
-            this.Asteroids.Add(new Asteroid(VecCirc()));
+            this.Planets.Add(new Planet(1000, 50, color: "#0080ff"));
+            this.Asteroids.Add(new Asteroid(VecCirc(), 50));
             this.Ships.Add(new Ship(VecCirc()));
 
             int barycenterMass = 0;
@@ -34,22 +34,25 @@ namespace Orbitroids.Game
             this.SetShip(this.Ships[0]);
             this.SetAsteroid(this.Asteroids[0]);
         }
+
         public List<Planet> Planets { get; set; }
         public List<Asteroid> Asteroids { get; set; }
         public List<Shot> Shots { get; set; }
         public List<Ship> Ships { get; set; }
         public IMassive Barycenter { get; private set; }
+        public int MaxShots { get; set; }
+        public int MaxAsteroids { get; set; }
 
         public void SetShip(Ship ship)
         {
-            Coordinate shipStartCoord = new Coordinate(0, -100);
+            Coordinate shipStartCoord = new Coordinate(0, -150);
             ship.Vel = VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, this.Barycenter), shipStartCoord);
             ship.DeltaRot = 0;
         }
 
         public void SetAsteroid(Asteroid asteroid)
         {
-            Coordinate asteroidStartCoord = new Coordinate(0, 100);
+            Coordinate asteroidStartCoord = new Coordinate(0, 150);
             asteroid.Vel = VecCirc(3 * Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, this.Barycenter), asteroidStartCoord);
             Random rand = new Random();
             asteroid.DeltaRot = (rand.NextDouble() - .5) / 10;
@@ -188,7 +191,9 @@ namespace Orbitroids.Game
                 this.Barycenter,
                 this.destroyShots,
                 this.destroyShips,
-                this.destroyAsteroids);
+                this.destroyAsteroids,
+                this.MaxShots,
+                this.MaxAsteroids);
         }
 
         private void setNewWave()
@@ -198,15 +203,16 @@ namespace Orbitroids.Game
                 toLaunch = true;
             else
             {
+                toLaunch = true;
                 foreach (Asteroid asteroid in this.Asteroids)
                 {
-                    if (Math.Abs(asteroid.Vel.Origin.X) > 500 || Math.Abs(asteroid.Vel.Origin.Y) > 500)
-                        toLaunch = true;
+                    if (Math.Abs(asteroid.Vel.Origin.X) <= 500 && Math.Abs(asteroid.Vel.Origin.Y) <= 500)
+                        toLaunch = false;
                 }
             }
             if (toLaunch)
             {
-                Asteroid newAst = new Asteroid(VecCirc());
+                Asteroid newAst = new Asteroid(VecCirc(), 50);
                 this.Asteroids.Add(newAst);
                 SetAsteroid(newAst);
             }
