@@ -21,7 +21,7 @@ namespace Orbitroids.Game
             // Save our hub context so we can easily use it 
             // to send to its connected clients
             hubContext = GlobalHost.ConnectionManager.GetHubContext<GameHub>();
-            model = new Engine(0);
+            model = new Engine(3);
             // Start the broadcast loop
             broadcastLoop = new Timer(
                 RenderFrame,
@@ -40,7 +40,7 @@ namespace Orbitroids.Game
         {
             model.Ships[0].Destroyed = false;
             model.Ships[0].Loaded = false;
-            //model.SetShip(model.Ships[0]);
+            model.SetShip();
         }
 
         public void Pause(dynamic caller)

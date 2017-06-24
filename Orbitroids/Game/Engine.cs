@@ -26,31 +26,9 @@ namespace Orbitroids.Game
             XmlDocument levelConfig = new XmlDocument();
             levelConfig.Load(HttpContext.Current.Server.MapPath("/Levels/Levels.xml"));
             XmlNode level = levelConfig.DocumentElement.ChildNodes[levelNumber];
-
-            XmlNodeList planetConfig = (from XmlNode node in level.ChildNodes
-                                        where node.Name == "Planets"
-                                        select node.ChildNodes).First();
-
-            XmlNode shipConfig = (from XmlNode node in level.ChildNodes
-                                  where node.Name == "Ships"
-                                  select node).First();
-
-            XmlNode asteroidConfig = (from XmlNode node in level.ChildNodes
-                                      where node.Name == "Asteroid"
-                                      select node).First();
-
-            foreach (XmlNode planet in planetConfig)
-            {
-                Vector vel = VecCirc();
-                int mass, radius;
-                bool atmosphere;
-                Int32.TryParse(planet.Attributes["mass"].Value, out mass);
-                Int32.TryParse(planet.Attributes["radius"].Value, out radius);
-                string color = planet.Attributes["color"].Value;
-                bool.TryParse(planet.Attributes["atmosphere"].Value, out atmosphere);
-
-                this.Planets.Add(new Planet(mass, radius, vel, color, atmosphere));
-            }
+            this.Level = level;
+            
+            SetPlanets();
 
             int barycenterMass = 0;
             foreach (Planet p in this.Planets)
@@ -59,10 +37,11 @@ namespace Orbitroids.Game
             }
             this.Barycenter = new Planet(barycenterMass, 0);
 
-            this.SetShip(shipConfig);
-            this.SetAsteroid(asteroidConfig);
+            this.SetShip();
+            this.SetNewWave();
         }
 
+        public XmlNode Level { get; private set; }
         public List<Planet> Planets { get; set; }
         public List<Asteroid> Asteroids { get; set; }
         public List<Shot> Shots { get; set; }
@@ -71,35 +50,93 @@ namespace Orbitroids.Game
         public int MaxShots { get; set; }
         public int MaxAsteroids { get; set; }
 
-        public void SetPlanets(XmlNodeList config)
+        private void SetPlanets()
         {
+            XmlNode planetConfig = (from XmlNode node in this.Level.ChildNodes
+                                    where node.Name == "Planets"
+                                    select node).First();
 
+            int  spread = 0, totalMass = 0, count = planetConfig.ChildNodes.Count;
+            if (count > 1)
+                Int32.TryParse(planetConfig.Attributes["spread"].Value, out spread);
+
+            foreach (XmlNode planet in planetConfig.ChildNodes)
+            {
+                int mass;
+                Int32.TryParse(planet.Attributes["mass"].Value, out mass);
+                totalMass += mass;
+            }
+
+            this.Barycenter = new Planet(totalMass, 0);
+
+            for (int i = 0; i < count; i++)
+            {
+                double vel = 0;
+                double forwardAngle = 0;
+                Coordinate coord = new Coordinate(0, 0); 
+                int mass, radius;                   
+                bool atmosphere;
+                Int32.TryParse(planetConfig.ChildNodes[i].Attributes["mass"].Value, out mass);
+                Int32.TryParse(planetConfig.ChildNodes[i].Attributes["radius"].Value, out radius);
+                bool.TryParse(planetConfig.ChildNodes[i].Attributes["atmosphere"].Value, out atmosphere);
+                string color = planetConfig.ChildNodes[i].Attributes["color"].Value;
+                
+                if (count == 2)
+                {
+                    forwardAngle = i == 0 ? Math.PI : 0;
+                    double dist = spread - spread * mass / totalMass;
+                    coord.X = i == 0 ? dist : -dist;
+
+                    vel = Physics.GetOrbitalVelocity(new Coordinate(0, spread), this.Barycenter);
+                    vel = vel * dist / spread;
+                }
+
+                this.Planets.Add(new Planet(mass, radius, VecCirc(forwardAngle, vel, coord), color, atmosphere));
+            }
         }
 
-        public void SetShip(XmlNode config)
+        public void SetShip()
         {
-            this.Ships.Add(new Ship(VecCirc()));
+            XmlNode shipConfig = (from XmlNode node in this.Level.ChildNodes
+                                  where node.Name == "Ship"
+                                  select node).First();
 
-            int altitude;
-            Int32.TryParse(config.Attributes["altitude"].Value, out altitude);
+            if (this.Ships.Count == 0)
+                this.Ships.Add(new Ship(VecCirc()));
 
-            Coordinate shipStartCoord = new Coordinate(0, -altitude);
-            this.Ships[0].Vel = VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(shipStartCoord, this.Barycenter), shipStartCoord);
+            int altitude = 0, parent = 0;
+            Int32.TryParse(shipConfig.Attributes["altitude"].Value, out altitude);
+            Int32.TryParse(shipConfig.Attributes["parent"].Value, out parent);
+            
+            IMassive parentBody = parent == 0 ? this.Barycenter : this.Planets[parent - 1];
+            Vector distVec = VecCirc(Math.PI, altitude, parentBody.Vel.Origin);
+            this.Ships[0].Vel = VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head);
             this.Ships[0].DeltaRot = 0;
             this.Ships[0].ForwardAngle = 0;
         }
 
-        public void SetAsteroid(XmlNode config)
+        public void SetNewWave()
         {
-            this.Asteroids.Add(new Asteroid(new Random(), VecCirc(), 50));
+            XmlNode asteroidConfig = (from XmlNode node in this.Level.ChildNodes
+                                      where node.Name == "Asteroid"
+                                      select node).First();
 
-            int altitude;
-            Int32.TryParse(config.Attributes["altitude"].Value, out altitude);
-
-            Coordinate asteroidStartCoord = new Coordinate(0, altitude);
-            this.Asteroids[0].Vel = VecCirc(3 * Math.PI / 2, Physics.GetOrbitalVelocity(asteroidStartCoord, this.Barycenter), asteroidStartCoord);
+            int number = 0, altitude = 0, parent = 0;
+            Int32.TryParse(asteroidConfig.Attributes["number"].Value, out number);
+            Int32.TryParse(asteroidConfig.Attributes["altitude"].Value, out altitude);
+            Int32.TryParse(asteroidConfig.Attributes["parent"].Value, out parent);
             Random rand = new Random();
-            this.Asteroids[0].DeltaRot = (rand.NextDouble() - .5) / 10;
+
+            for (int i = 0; i < number; i++)
+            {
+                this.Asteroids.Add(new Asteroid(rand, VecCirc(), 50));
+                
+                double forwardAngle = i * 2 * Math.PI / number - Math.PI / 2;
+                IMassive parentBody = parent == 0 ? this.Barycenter : this.Planets[parent - 1];
+                Vector distVec = VecCirc(i * 2 * Math.PI / number, altitude, parentBody.Vel.Origin);
+                this.Asteroids.Last().Vel = VecCirc(forwardAngle, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head);
+                this.Asteroids.Last().DeltaRot = (rand.NextDouble() - .5) / 10;
+            }
         }
 
         private void applyMotion()
@@ -189,7 +226,7 @@ namespace Orbitroids.Game
             {
                 this.Asteroids.Remove(asteroid);
                 Asteroid[] newAsteroids = splitAsteroid(asteroid, 3, 50);
-                if(newAsteroids != null)
+                if (newAsteroids != null)
                     this.Asteroids.AddRange(newAsteroids);
             }
         }
@@ -226,7 +263,7 @@ namespace Orbitroids.Game
         public void Update()
         {
             applyMotion();
-            setNewWave();
+            checkWave();
             Collisions.HandleCollisions(
                 this.Shots,
                 this.Asteroids,
@@ -240,7 +277,7 @@ namespace Orbitroids.Game
                 this.MaxAsteroids);
         }
 
-        private void setNewWave()
+        private void checkWave()
         {
             bool toLaunch = false;
             if (this.Asteroids.Count == 0)
@@ -255,11 +292,7 @@ namespace Orbitroids.Game
                 }
             }
             if (toLaunch)
-            {
-                Asteroid newAst = new Asteroid(new Random(), VecCirc(), 50);
-                this.Asteroids.Add(newAst);
-                //SetAsteroid(newAst);
-            }
+                SetNewWave();
         }
     }
 }
