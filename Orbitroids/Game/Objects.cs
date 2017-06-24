@@ -185,7 +185,7 @@ namespace Orbitroids.Game
         
         public class Asteroid : Orbital, IPolygon, IColorable
         {
-            public Asteroid(Vector vel, double radius = 50, double roughness = .5, string color = "#808080", double deltaRot = 0, double forwardAngle = 0)
+            public Asteroid(Random rand, Vector vel, double radius = 50, double roughness = .5, string color = "#808080", double deltaRot = 0, double forwardAngle = 0)
             {
                 this.Vel = vel;
                 this.Radius = radius;
@@ -193,8 +193,7 @@ namespace Orbitroids.Game
                 this.DeltaRot = deltaRot;
                 this.ForwardAngle = forwardAngle;
                 this.Color = color;
-
-                Random rand = new Random();
+                
                 List<Vector> arms = new List<Vector>();
                 double armNum = 1 + Math.Sqrt(radius);
                 for (int i = 0; i < armNum; i++)

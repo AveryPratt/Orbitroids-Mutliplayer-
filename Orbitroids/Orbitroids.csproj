@@ -100,6 +100,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
@@ -213,7 +214,6 @@
     <Compile Include="Game\Collisions.cs" />
     <Compile Include="Game\Geometry.cs" />
     <Compile Include="Game\Engine.cs" />
-    <Compile Include="Game\Levels.cs" />
     <Compile Include="Game\Objects.cs" />
     <Compile Include="Game\Physics.cs" />
     <Compile Include="Global.asax.cs">
@@ -234,6 +234,7 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Levels\Levels.xml" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="ApplicationInsights.config">
