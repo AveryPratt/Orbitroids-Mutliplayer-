@@ -16,12 +16,13 @@ namespace Orbitroids.Game
         private readonly IHubContext hubContext;
         private Timer broadcastLoop;
         private Engine model;
+        public int Level { get; set; }
         public Broadcaster()
         {
             // Save our hub context so we can easily use it 
             // to send to its connected clients
             hubContext = GlobalHost.ConnectionManager.GetHubContext<GameHub>();
-            model = new Engine(3);
+            model = new Engine(this.Level);
             // Start the broadcast loop
             broadcastLoop = new Timer(
                 RenderFrame,

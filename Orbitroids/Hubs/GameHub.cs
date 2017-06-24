@@ -17,7 +17,7 @@ namespace Orbitroids.Hubs
         }
         public GameHub(Broadcaster caster)
         {
-            broadcaster = caster;
+            this.broadcaster = caster;
         }
 
         public void Enter()

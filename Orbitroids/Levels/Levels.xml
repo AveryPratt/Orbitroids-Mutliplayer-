@@ -2,7 +2,7 @@
 <Levels>
   <Level number="0">
     <Planets alignment="none"></Planets>
-    <Ship altitude="0"></Ship>
+    <Ship altitude="0" parent="0"></Ship>
     <Asteroid altitude="250" parent="0" number="3"></Asteroid>
   </Level>
   <Level number="1">
