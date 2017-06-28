@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Levels>
+  <Level number="0">
+    <Planets alignment="none"></Planets>
+    <Ship altitude="0" parent="0"></Ship>
+    <Asteroid altitude="250" parent="0" number="3"></Asteroid>
+  </Level>
+  <Level number="1">
+    <Planets alignment="single">
+      <Planet mass="500" radius="50" color="#00FFFF" atmosphere="true"></Planet>
+    </Planets>
+    <Ship altitude="250" parent="1"></Ship>
+    <Asteroid altitude="250" parent="1" number="1"></Asteroid>
+  </Level>
+  <Level number="2">
+    <Planets alignment="single">
+      <Planet mass="1000" radius="80" color="#0080FF" atmosphere="true"></Planet>
+    </Planets>
+    <Ship altitude="250" parent="1"></Ship>
+    <Asteroid altitude="250" parent="1" number="1"></Asteroid>
+  </Level>
+  <Level number="3">
+    <Planets alignment="single">
+      <Planet mass="5000" radius="200" color="#00FF80" atmosphere="true"></Planet>
+    </Planets>
+    <Ship altitude="250" parent="1"></Ship>
+    <Asteroid altitude="250" parent="1" number="1"></Asteroid>
+  </Level>
+  <Level number="4">
+    <Planets spread="300">
+      <Planet mass="1000" radius="50" color="#FF8000" atmosphere="true"></Planet>
+      <Planet mass="200" radius="30" color="#800000" atmosphere="false"></Planet>
+    </Planets>
+    <Ship altitude="125" parent="1"></Ship>
+    <Asteroid altitude="125" parent="1" number="3"></Asteroid>
+  </Level>
+</Levels>

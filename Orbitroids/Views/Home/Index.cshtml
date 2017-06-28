@@ -3,7 +3,7 @@
 }
 
 <form action="@Url.Action("Game", "Home")">
-    <fieldset>
+    @*<fieldset>
         <legend>Game Type</legend>
         <input type="button" class="game-type" value="Collaborative" onclick="orbs.selectGameType(1);" />
         <input type="button" class="game-type" value="Competitive" onclick="orbs.selectGameType(2);" />
@@ -14,6 +14,14 @@
         <input type="button" class="players" value="2" onclick="orbs.selectPlayerNumber(2);" />
         <input type="button" class="players" value="3" onclick="orbs.selectPlayerNumber(3);" />
         <input type="button" class="players" value="4" onclick="orbs.selectPlayerNumber(4);" />
+    </fieldset>*@
+    <fieldset>
+        <legend>Levels</legend>
+        <input type="button" class="levels" value="0" onclick="orbs.selectLevel(0);" />
+        <input type="button" class="levels" value="1" onclick="orbs.selectLevel(1);" />
+        <input type="button" class="levels" value="2" onclick="orbs.selectLevel(2);" />
+        <input type="button" class="levels" value="3" onclick="orbs.selectLevel(3);" />
+        <input type="button" class="levels" value="4" onclick="orbs.selectLevel(4);" />
     </fieldset>
     <input type="submit" value="Play" />
 </form>

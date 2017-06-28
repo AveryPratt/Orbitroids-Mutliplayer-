@@ -1,45 +1,90 @@
 ﻿'use strict';
 
-var orbs = {};
-orbs.gameParams = [];
+$(document).ready(function () {
+    orbs.drawings = {
+        renderPlanets: function (planets) {
+            for (var idx in planets) {
+                var planet = planets[idx];
 
-orbs.selectGameType = function (number) {
-    orbs.gameParams['type'] = number;
+                var center = orbs.convertPoint(planet.Vel.Origin);
 
-    var buttons = $('.game-type');
-    buttons.css('background-color', 'rgb(64, 192, 192)');
-    buttons.css('border-color', 'rgb(64, 128, 128)');
+                //var sunVec = orbs.vecCirc(orbs.sunAngle + Math.PI, planet.Radius, center);
+                //var grd = ctx.createLinearGradient(sunVec.head.x, sunVec.head.y, planet.Radius, center.x, center.y, planet.Radius * 2);
+                //grd.addColorStop(0, planet.Color);
+                //grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
+                //ctx.fillStyle = grd;
+                orbs.ctx.fillStyle = planet.Color;
 
-    if (number === 1) {
-        var toHighlight = $('.game-type[value="Collaborative"]');
-        $('.players[value="1"]').show();
-    } else if (number === 2) {
-        toHighlight = $('.game-type[value="Competitive"]');
-        if (orbs.gameParams['players'] === 1) {
-            orbs.gameParams['players'] = 2;
-            orbs.selectPlayerNumber(orbs.gameParams['players']);
+                orbs.ctx.beginPath();
+                orbs.ctx.arc(center.x, center.y, planet.Radius, 0, 2 * Math.PI, false);
+                orbs.ctx.closePath();
+
+                orbs.ctx.fill();
+            }
+        },
+        renderAsteroids: function (asteroids) {
+            for (var idx in asteroids) {
+                var asteroid = asteroids[idx];
+
+                var points = [];
+                for (var a in asteroid.Arms) {
+                    points.push(orbs.convertPoint(asteroid.Arms[a].Head));
+                }
+
+                //var sunVec = orbs.vecCirc(orbs.sunAngle + Math.PI, asteroid.Radius, center);
+                //var grd = ctx.createRadialGradiant(sunVec.head.x, sunVec.head.y, asteroid.Radius, center.x, center.y, asteroid.Radius * 2);
+                //grd.addColorStop(0, asteroid.Color);
+                //grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
+                //ctx.fillStyle = grd;
+                orbs.ctx.fillStyle = asteroid.Color;
+
+                orbs.ctx.beginPath();
+                orbs.ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+                for (var p in points) {
+                    orbs.ctx.lineTo(points[p].x, points[p].y);
+                }
+                orbs.ctx.closePath();
+
+                orbs.ctx.fill();
+            }
+        },
+        renderShots: function (shots) {
+            for (var idx in shots) {
+                var shot = shots[idx];
+
+                var center = orbs.convertPoint(shot.Vel.Origin);
+
+                orbs.ctx.fillStyle = shot.Color;
+
+                orbs.ctx.beginPath();
+                orbs.ctx.arc(center.x, center.y, 1.5, 0, 2 * Math.PI, false);
+                orbs.ctx.closePath();
+
+                orbs.ctx.fill();
+            }
+        },
+        renderShips: function (ships) {
+            for (var idx in ships) {
+                var ship = ships[idx];
+
+                if (!ship.Destroyed) {
+                    var points = [];
+                    for (var a in ship.Arms) {
+                        points.push(orbs.convertPoint(ship.Arms[a].Head));
+                    }
+
+                    orbs.ctx.strokeStyle = ship.Color;
+                    orbs.ctx.lineWidth = 1;
+
+                    orbs.ctx.beginPath();
+                    orbs.ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+                    for (var p in points) {
+                        orbs.ctx.lineTo(points[p].x, points[p].y);
+                    }
+                    orbs.ctx.closePath();
+                    orbs.ctx.stroke();
+                }
+            }
         }
-        $('.players[value="1"]').hide();
-    }
-    toHighlight.css('background-color', 'rgb(192, 64, 192)');
-    toHighlight.css('border-color', 'rgb(128, 64, 128)');
-};
-
-orbs.selectPlayerNumber = function (number) {
-    orbs.gameParams['player'] = number;
-
-    var buttons = $('.players');
-    buttons.css('background-color', 'rgb(64, 192, 192)');
-    buttons.css('border-color', 'rgb(64, 128, 128)');
-
-    var toHighlight = $('.players[value="' + number + '"]');
-    toHighlight.css('background-color', 'rgb(192, 64, 192)');
-    toHighlight.css('border-color', 'rgb(128, 64, 128)');
-};
-
-orbs.gameParams['type'] = 1;
-orbs.gameParams['players'] = 1;
-
-orbs.selectGameType(orbs.gameParams['type']);
-orbs.selectPlayerNumber(orbs.gameParams['players']);
-
+    };
+});
