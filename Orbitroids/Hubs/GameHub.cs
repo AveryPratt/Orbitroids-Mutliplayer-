@@ -20,70 +20,75 @@ namespace Orbitroids.Hubs
             this.broadcaster = caster;
         }
 
+        public void SetLevel(int level)
+        {
+            broadcaster.SetLevel(level);
+        }
+
         public void Enter()
         {
             broadcaster.Enter(Clients.Caller);
-            Clients.All.log("enter");
+            //Clients.All.log("enter");
         }
 
         public void Pause()
         {
             broadcaster.Pause(Clients.Caller);
-            Clients.All.log("pause");
+            //Clients.All.log("pause");
         }
 
         public void Shoot()
         {
             broadcaster.Shoot(Clients.Caller);
-            Clients.All.log("shoot");
+            //Clients.All.log("shoot");
         }
 
         public void Burn()
         {
             broadcaster.Burn(Clients.Caller);
-            Clients.All.log("burn");
+            //Clients.All.log("burn");
         }
 
         public void ReleaseBurn()
         {
             broadcaster.ReleaseBurn(Clients.Caller);
-            Clients.All.log("release burn");
+            //Clients.All.log("release burn");
         }
 
         public void SlowBurn()
         {
             broadcaster.SlowBurn(Clients.Caller);
-            Clients.All.log("slow burn");
+            //Clients.All.log("slow burn");
         }
 
         public void ReleaseSlowBurn()
         {
             broadcaster.ReleaseSlowBurn(Clients.Caller);
-            Clients.All.log("release slow burn");
+            //Clients.All.log("release slow burn");
         }
 
         public void Rotate(string direction)
         {
             broadcaster.Rotate(direction, Clients.Caller);
-            Clients.All.log("rotate " + direction);
+            //Clients.All.log("rotate " + direction);
         }
 
         public void ReleaseRotate(string direction)
         {
             broadcaster.ReleaseRotate(direction, Clients.Caller);
-            Clients.All.log("release rotate " + direction);
+            //Clients.All.log("release rotate " + direction);
         }
 
         public void DampenControls()
         {
             broadcaster.DampenControls(Clients.Caller);
-            Clients.All.log("dampen conrols");
+            //Clients.All.log("dampen conrols");
         }
 
         public void ReleaseDampenControls()
         {
             broadcaster.ReleaseDampenControls(Clients.Caller);
-            Clients.All.log("release dampen controls");
+            //Clients.All.log("release dampen controls");
         }
     }
 }

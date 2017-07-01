@@ -25,9 +25,13 @@ namespace Orbitroids.Game
 
             XmlDocument levelConfig = new XmlDocument();
             levelConfig.Load(HttpContext.Current.Server.MapPath("/Levels/Levels.xml"));
-            XmlNode level = levelConfig.DocumentElement.ChildNodes[levelNumber];
-            this.Level = level;
-            
+            this.Level = levelConfig.DocumentElement.ChildNodes[levelNumber];
+
+            this.SunAngle = Math.PI;
+            this.SunRot = Convert.ToDouble((from XmlNode node in this.Level.ChildNodes
+                                            where node.Name == "SunRot"
+                                            select node).First().Value);
+
             SetPlanets();
 
             int barycenterMass = 0;
@@ -41,6 +45,8 @@ namespace Orbitroids.Game
             this.SetNewWave();
         }
 
+        public double SunRot { get; set; }
+        public double SunAngle { get; set; }
         public XmlNode Level { get; private set; }
         public List<Planet> Planets { get; set; }
         public List<Asteroid> Asteroids { get; set; }
@@ -220,14 +226,17 @@ namespace Orbitroids.Game
             }
         }
 
-        private void destroyAsteroids(IEnumerable<Asteroid> asteroids)
+        private void destroyAsteroids(IEnumerable<Asteroid> asteroids, bool split)
         {
             foreach (Asteroid asteroid in asteroids)
             {
                 this.Asteroids.Remove(asteroid);
-                Asteroid[] newAsteroids = splitAsteroid(asteroid, 3, 50);
-                if (newAsteroids != null)
-                    this.Asteroids.AddRange(newAsteroids);
+                if (split)
+                {
+                    Asteroid[] newAsteroids = splitAsteroid(asteroid, 3, 100);
+                    if (newAsteroids != null)
+                        this.Asteroids.AddRange(newAsteroids);
+                }
             }
         }
 
@@ -239,12 +248,13 @@ namespace Orbitroids.Game
                 double remainingArea = asteroidArea;
                 Asteroid[] newAsteroids = new Asteroid[splits];
                 Random rand = new Random();
+                double randAngle = rand.NextDouble() * 2 * Math.PI;
                 for (int i = 0; i < splits; i++)
                 {
                     double area = rand.Next(1, 4) * .5 * remainingArea / (splits - i);
                     double angle = 2 * Math.PI / (splits - i);
                     double speed = power / area;
-                    newAsteroids[i] = new Asteroid(rand, AddVectors(asteroid.Vel, VecCirc(angle, speed)), Math.Sqrt(area), asteroid.Roughness, asteroid.Color, (rand.NextDouble() - .5) / 10);
+                    newAsteroids[i] = new Asteroid(rand, AddVectors(asteroid.Vel, VecCirc(randAngle + angle, speed)), Math.Sqrt(area), asteroid.Roughness, asteroid.Color, (rand.NextDouble() - .5) / 10);
                     remainingArea -= area;
                 }
                 return newAsteroids;
@@ -262,6 +272,7 @@ namespace Orbitroids.Game
 
         public void Update()
         {
+            this.SunAngle += this.SunRot;
             applyMotion();
             checkWave();
             Collisions.HandleCollisions(

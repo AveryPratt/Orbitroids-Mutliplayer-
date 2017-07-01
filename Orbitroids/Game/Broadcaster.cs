@@ -31,6 +31,12 @@ namespace Orbitroids.Game
                 broadcastInterval);
         }
 
+        public void SetLevel(int level)
+        {
+            this.Level = level;
+            this.model = new Engine(level);
+        }
+
         public void RenderFrame(object state)
         {
             model.Update();
