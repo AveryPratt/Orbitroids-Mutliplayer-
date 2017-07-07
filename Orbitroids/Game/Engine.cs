@@ -30,7 +30,7 @@ namespace Orbitroids.Game
             this.SunAngle = Math.PI;
             this.SunRot = Convert.ToDouble((from XmlNode node in this.Level.ChildNodes
                                             where node.Name == "SunRot"
-                                            select node).First().Value);
+                                            select node).First().InnerText);
 
             SetPlanets();
 

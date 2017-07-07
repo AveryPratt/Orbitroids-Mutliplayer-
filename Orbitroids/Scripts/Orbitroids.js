@@ -2,21 +2,43 @@
 
 $(document).ready(function () {
     orbs.drawings = {
+        convertPoint: function (point) {
+            return {
+                x: point.X + orbs.canvas.width / 2,
+                y: orbs.canvas.height / 2 - point.Y
+            };
+        },
+        amplifyColor: function(color, mult){
+            if (color[0] == '#') {
+                var r = Math.round(parseInt(color.slice(1, 3), 16) * mult);
+                var g = Math.round(parseInt(color.slice(3, 5), 16) * mult);
+                var b = Math.round(parseInt(color.slice(5, 7), 16) * mult);
+                var rHex = r.toString(16);
+                rHex = rHex.length === 1 ? '0' + rHex : rHex;
+                var gHex = g.toString(16);
+                gHex = gHex.length === 1 ? '0' + gHex : gHex;
+                var bHex = b.toString(16);
+                bHex = bHex.length === 1 ? '0' + bHex : bHex;
+                return '#' + rHex + gHex + bHex;
+            }
+            return color;
+        },
         renderPlanets: function (sunAngle, planets) {
             for (var idx in planets) {
                 var planet = planets[idx];
+                var center = orbs.drawings.convertPoint(planet.Vel.Origin);
 
                 var sunVec = orbs.geometry.vecCirc(sunAngle + Math.PI, planet.Radius, planet.Vel.Origin);
-                var grd = orbs.ctx.createLinearGradient(sunVec.head.x, sunVec.head.y, planet.Radius, planet.Vel.Origin.X, planet.Vel.Origin.Y, planet.Radius * 2);
+                var sunVecHead = orbs.drawings.convertPoint(sunVec.Head);
+                var grd = orbs.ctx.createLinearGradient(sunVecHead.x, sunVecHead.y, center.x, center.y);
                 grd.addColorStop(0, planet.Color);
-                grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
+                grd.addColorStop(1, orbs.drawings.amplifyColor(planet.Color, .25));
                 orbs.ctx.fillStyle = grd;
                 //orbs.ctx.fillStyle = planet.Color;
 
                 orbs.ctx.beginPath();
-                orbs.ctx.arc(planet.Vel.Origin.x, planet.Vel.Origin.y, planet.Radius, 0, 2 * Math.PI, false);
+                orbs.ctx.arc(center.x, center.y, planet.Radius, 0, 2 * Math.PI, false);
                 orbs.ctx.closePath();
-
                 orbs.ctx.fill();
             }
         },
@@ -26,13 +48,15 @@ $(document).ready(function () {
 
                 var points = [];
                 for (var a in asteroid.Arms) {
-                    points.push(orbs.convertPoint(asteroid.Arms[a].Head));
+                    points.push(orbs.drawings.convertPoint(asteroid.Arms[a].Head));
                 }
 
-                var sunVec = orbs.geometry.vecCirc(sunAngle + Math.PI, asteroid.Radius, asteroid.Vel.Origin);
-                var grd = orbs.ctx.createRadialGradient(sunVec.head.x, sunVec.head.y, asteroid.Radius, asteroid.Vel.Origin.X, asteroid.Vel.Origin.Y, asteroid.Radius * 2);
+                var center = orbs.drawings.convertPoint(asteroid.Vel.Origin);
+                var sunVec = orbs.geometry.vecCirc(sunAngle, asteroid.Radius, asteroid.Vel.Origin);
+                var sunVecHead = orbs.drawings.convertPoint(sunVec.Head);
+                var grd = orbs.ctx.createRadialGradient(sunVecHead.x, sunVecHead.y, asteroid.Radius, center.x, center.y, asteroid.Radius * 2);
                 grd.addColorStop(0, asteroid.Color);
-                grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
+                grd.addColorStop(1, '#FFFFFF');
                 orbs.ctx.fillStyle = grd;
                 //orbs.ctx.fillStyle = asteroid.Color;
 
@@ -50,7 +74,7 @@ $(document).ready(function () {
             for (var idx in shots) {
                 var shot = shots[idx];
 
-                var center = orbs.convertPoint(shot.Vel.Origin);
+                var center = orbs.drawings.convertPoint(shot.Vel.Origin);
 
                 orbs.ctx.fillStyle = shot.Color;
 
@@ -68,7 +92,7 @@ $(document).ready(function () {
                 if (!ship.Destroyed) {
                     var points = [];
                     for (var a in ship.Arms) {
-                        points.push(orbs.convertPoint(ship.Arms[a].Head));
+                        points.push(orbs.drawings.convertPoint(ship.Arms[a].Head));
                     }
 
                     orbs.ctx.strokeStyle = ship.Color;
@@ -88,11 +112,8 @@ $(document).ready(function () {
 
     orbs.geometry = {
         Point: function (x, y) {
-            this.x = x;
-            this.y = y;
-            this.convert = function () {
-                return { x: orbs.view.center.x + (this.x / orbs.unit), y: orbs.view.center.y - (this.y / orbs.unit) };
-            };
+            this.X = x;
+            this.Y = y;
         },
         Rotational: function (forwardAngle, deltaRot) {
             this.forwardAngle = forwardAngle;
@@ -113,9 +134,9 @@ $(document).ready(function () {
             };
         },
         Vector: function () {
-            this.origin;
-            this.head;
-            this.delta;
+            this.Origin;
+            this.Head;
+            this.Delta;
             this.len;
 
             this.extend = function (add, mult) {
@@ -123,27 +144,27 @@ $(document).ready(function () {
                 if (typeof mult === 'number') {
                     this.len *= mult;
                 }
-                this.delta.x *= mult;
-                this.delta.y *= mult;
-                this.head.x = this.origin.x + this.delta.x;
-                this.head.y = this.origin.y + this.delta.y;
+                this.Delta.X *= mult;
+                this.Delta.Y *= mult;
+                this.Head.X = this.Origin.X + this.Delta.X;
+                this.Head.Y = this.Origin.Y + this.Delta.Y;
             };
             this.rotate = function (accelRot) {
                 if (accelRot) { this.deltaRot += accelRot; }
                 this.forwardAngle += this.deltaRot;
                 this.refineForwardAngle();
 
-                var newX = this.len * ((this.delta.x / this.len) * Math.cos(this.forwardAngle) - (this.delta.y / this.len) * Math.sin(this.forwardAngle));
-                var newY = this.len * ((this.delta.x / this.len) * Math.sin(this.forwardAngle) + (this.delta.y / this.len) * Math.cos(this.forwardAngle));
-                this.delta.x = newX;
-                this.delta.y = newY;
-                this.head.x = this.origin.x + this.delta.x;
-                this.head.y = this.origin.y + this.delta.y;
+                var newX = this.len * ((this.Delta.X / this.len) * Math.cos(this.forwardAngle) - (this.Delta.Y / this.len) * Math.sin(this.forwardAngle));
+                var newY = this.len * ((this.Delta.X / this.len) * Math.sin(this.forwardAngle) + (this.Delta.Y / this.len) * Math.cos(this.forwardAngle));
+                this.Delta.X = newX;
+                this.Delta.Y = newY;
+                this.Head.X = this.Origin.X + this.Delta.X;
+                this.Head.Y = this.Origin.Y + this.Delta.Y;
             };
             this.addVector = function (vec) {
-                this.delta.x += vec.delta.x;
-                this.delta.y += vec.delta.y;
-                this.head = new orbs.geometry.Point(this.origin.x + this.delta.x, this.origin.y + this.delta.y);
+                this.Delta.X += vec.Delta.X;
+                this.Delta.Y += vec.Delta.Y;
+                this.Head = new orbs.geometry.Point(this.Origin.X + this.Delta.X, this.Origin.Y + this.Delta.Y);
             };
         },
 
@@ -151,20 +172,20 @@ $(document).ready(function () {
             var vec = new orbs.geometry.Vector();
 
             if (origin) {
-                vec.origin = new orbs.geometry.Point(origin.X, origin.Y);
-            } else { vec.origin = new orbs.geometry.Point(0, 0); }
+                vec.Origin = new orbs.geometry.Point(origin.X, origin.Y);
+            } else { vec.Origin = new orbs.geometry.Point(0, 0); }
 
-            if (head) { vec.head = head; }
-            else { vec.head = new orbs.geometry.Point(vec.origin.x, vec.origin.y); }
+            if (head) { vec.Head = head; }
+            else { vec.Head = new orbs.geometry.Point(vec.Origin.X, vec.Origin.Y); }
 
             if (deltaRot) { vec.deltaRot = deltaRot; }
             else { vec.deltaRot = 0; }
 
-            vec.delta = new orbs.geometry.Point(vec.head.x - vec.origin.x, vec.head.y - vec.origin.y);
-            vec.len = Math.sqrt(Math.pow(vec.delta.x, 2) + Math.pow(vec.delta.y, 2));
-            var unitDelta = new orbs.geometry.Point(vec.delta.x / vec.len, vec.delta.y / vec.len);
-            vec.forwardAngle = Math.asin(unitDelta.x);
-            if (unitDelta.y < 0) {
+            vec.Delta = new orbs.geometry.Point(vec.Head.X - vec.Origin.X, vec.Head.Y - vec.Origin.Y);
+            vec.len = Math.sqrt(Math.pow(vec.Delta.X, 2) + Math.pow(vec.Delta.Y, 2));
+            var unitDelta = new orbs.geometry.Point(vec.Delta.X / vec.len, vec.Delta.Y / vec.len);
+            vec.forwardAngle = Math.asin(unitDelta.X);
+            if (unitDelta.Y < 0) {
                 vec.forwardAngle = Math.PI - vec.forwardAngle;
                 vec.refineForwardAngle();
             }
@@ -173,21 +194,21 @@ $(document).ready(function () {
         vecDelta: function (delta, origin, deltaRot) {
             var vec = new orbs.geometry.Vector();
 
-            if (delta) { vec.delta = delta; }
-            else { vec.delta = new orbs.geometry.Point(0, 0); }
+            if (delta) { vec.Delta = delta; }
+            else { vec.Delta = new orbs.geometry.Point(0, 0); }
 
             if (origin) {
-                vec.origin = new orbs.geometry.Point(origin.X, origin.Y);
-            } else { vec.origin = new orbs.geometry.Point(0, 0); }
+                vec.Origin = new orbs.geometry.Point(origin.X, origin.Y);
+            } else { vec.Origin = new orbs.geometry.Point(0, 0); }
 
             if (deltaRot) { vec.deltaRot = deltaRot; }
             else { vec.deltaRot = 0; }
 
-            vec.head = new orbs.geometry.Point(vec.origin.x + vec.delta.x, vec.origin.y + vec.delta.y);
-            vec.len = Math.sqrt(Math.pow(vec.delta.x, 2) + Math.pow(vec.delta.y, 2));
-            var unitDelta = new orbs.geometry.Point(vec.delta.x / vec.len, vec.delta.y / vec.len);
-            vec.forwardAngle = Math.asin(unitDelta.x);
-            if (unitDelta.y < 0) {
+            vec.Head = new orbs.geometry.Point(vec.Origin.X + vec.Delta.X, vec.Origin.Y + vec.deltaDeltaY);
+            vec.len = Math.sqrt(Math.pow(vec.Delta.X, 2) + Math.pow(vec.Delta.Y, 2));
+            var unitDelta = new orbs.geometry.Point(vec.Delta.X / vec.len, vec.Delta.Y / vec.len);
+            vec.forwardAngle = Math.asin(unitDelta.X);
+            if (unitDelta.Y < 0) {
                 vec.forwardAngle = Math.PI - vec.forwardAngle;
                 vec.refineForwardAngle();
             }
@@ -202,23 +223,23 @@ $(document).ready(function () {
             if (len) { vec.len = len; }
             else { vec.len = 0; }
 
-            if (origin) { vec.origin = new orbs.geometry.Point(origin.X, origin.Y); }
-            else { vec.origin = new orbs.geometry.Point(0, 0); }
+            if (origin) { vec.Origin = new orbs.geometry.Point(origin.X, origin.Y); }
+            else { vec.Origin = new orbs.geometry.Point(0, 0); }
 
             if (deltaRot) { vec.deltaRot = deltaRot; }
             else { vec.deltaRot = 0; }
 
-            vec.delta = new orbs.geometry.Point(vec.len * Math.sin(vec.forwardAngle), vec.len * Math.cos(vec.forwardAngle));
-            vec.head = new orbs.geometry.Point(vec.origin.x + vec.delta.x, vec.origin.y + vec.delta.y);
+            vec.Delta = new orbs.geometry.Point(vec.len * Math.sin(vec.forwardAngle), vec.len * Math.cos(vec.forwardAngle));
+            vec.Head = new orbs.geometry.Point(vec.Origin.X + vec.Delta.X, vec.Origin.Y + vec.Delta.Y);
 
             return vec;
         },
         addVectors: function (vec1, vec2) {
             var delta = {
-                x: vec1.delta.x + vec2.delta.x,
-                y: vec1.delta.y + vec2.delta.y
+                X: vec1.Delta.X + vec2.Delta.X,
+                Y: vec1.Delta.Y + vec2.Delta.Y
             };
-            return orbs.geometry.vecDelta(delta, vec1.origin);
+            return orbs.geometry.vecDelta(delta, vec1.Origin);
         },
 
         Orbital: function (vel, accel, forwardAngle, deltaRot) {
@@ -235,9 +256,9 @@ $(document).ready(function () {
             else { this.accel = orbs.geometry.vecCirc(); }
 
             this.applyGravity = function (planet) {
-                var distVec = orbs.geometry.vecCart(planet.vel.origin, this.vel.origin);
+                var distVec = orbs.geometry.vecCart(planet.vel.Origin, this.vel.Origin);
                 var force = planet.mass / (Math.pow(distVec.len, 2));
-                var forceVec = orbs.geometry.vecCirc(distVec.forwardAngle, force, this.vel.origin);
+                var forceVec = orbs.geometry.vecCirc(distVec.forwardAngle, force, this.vel.Origin);
                 this.accel.addVector(forceVec);
             };
             this.applyAccel = function (accel) {
@@ -248,7 +269,7 @@ $(document).ready(function () {
             };
             this.applyMotion = function () {
                 this.vel.addVector(this.accel);
-                this.vel = orbs.geometry.vecDelta(this.vel.delta, this.vel.head, this.vel.deltaRot);
+                this.vel = orbs.geometry.vecDelta(this.vel.delta, this.vel.Head, this.vel.deltaRot);
             };
         }
     };

@@ -1,16 +1,10 @@
 ﻿'use strict';
 
 $(document).ready(function () {
-    orbs.game = $.connection.gameHub,
-    orbs.canvas = document.getElementById('gamescreen'),
-    orbs.ctx = document.getElementById('gamescreen').getContext('2d'),
-    orbs.unit = 1,
-    orbs.convertPoint = function (point) {
-        return {
-            x: point.X + orbs.canvas.width / 2,
-            y: orbs.canvas.height / 2 - point.Y
-        };
-    }
+    orbs.game = $.connection.gameHub;
+    orbs.canvas = document.getElementById('gamescreen');
+    orbs.ctx = document.getElementById('gamescreen').getContext('2d');
+    orbs.unit = 1;
 
     orbs.game.client.log = function (message) {
         console.log(message);
