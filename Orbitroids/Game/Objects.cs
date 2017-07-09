@@ -49,9 +49,10 @@ namespace Orbitroids.Game
                 this.DeltaRot = deltaRot;
 
                 this.Burning = false;
-                this.RotPower = .01;
-                this.BurnPower = .2;
-                this.DampenBurnPower = .075;
+                this.ShotPower = .15;
+                this.RotPower = .0005;
+                this.BurnPower = .01;
+                this.DampenBurnPower = .00333;
                 this.DampenBurn = false;
                 this.Loaded = false;
                 this.Destroyed = false;
@@ -61,7 +62,8 @@ namespace Orbitroids.Game
 
                 this.alignPoints();
             }
-            
+
+            public double ShotPower { get; set; }
             public double BurnPower { get; set; }
             public double DampenBurnPower { get; set; }
             public double Radius { get; set; }
@@ -100,7 +102,7 @@ namespace Orbitroids.Game
                     VecCirc(this.ForwardAngle - 5 * Math.PI / 6, this.Radius, this.Vel.Origin)
                 };
             }
-            new protected void Rotate()
+            new protected void Rotate(double timespan)
             {
                 double maxRotPower = this.RotPower;
 
@@ -141,13 +143,15 @@ namespace Orbitroids.Game
                     this.DeltaRot += this.AccelRot;
                 }
 
-                this.ForwardAngle += this.DeltaRot;
+                this.ForwardAngle += this.DeltaRot * timespan;
             }
-            new public void ApplyMotion()
+            new public void ApplyMotion(double timespan)
             {
-                this.Rotate();
+                this.Rotate(timespan);
                 this.Vel = AddVectors(this.Vel, this.Accel);
+                this.Vel.Extend(timespan);
                 this.Vel = VecDelta(this.Vel.Delta, this.Vel.Head, this.Vel.DeltaRot);
+                this.Vel.Extend(1 / timespan);
                 this.Accel = new Vector();
                 this.AccelRot = 0;
                 this.TrueAnomaly = VecCart(this.Vel.Origin, new Coordinate());
@@ -157,11 +161,11 @@ namespace Orbitroids.Game
             {
                 this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle, force));
             }
-            public Shot Shoot()
+            public Shot Shoot(double timespan)
             {
                 this.Loaded = false;
-                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, 1));
-                Vector projection = VecCirc(this.ForwardAngle, 2.5, this.Arms.ToArray()[0].Head);
+                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, this.ShotPower / timespan));
+                Vector projection = VecCirc(this.ForwardAngle, this.ShotPower, this.Arms.ToArray()[0].Head);
                 projection = AddVectors(projection, this.Vel);
                 return new Shot(projection);
             }
@@ -216,9 +220,9 @@ namespace Orbitroids.Game
             public double Roughness { get; set; }
             public IEnumerable<Vector> Arms { get; set; }
             
-            new public void ApplyMotion()
+            new public void ApplyMotion(double timespan)
             {
-                base.ApplyMotion();
+                base.ApplyMotion(timespan);
                 this.AlignPoints();
             }
             public IEnumerable<Vector> ConstructSides()

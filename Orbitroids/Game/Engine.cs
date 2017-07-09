@@ -25,9 +25,13 @@ namespace Orbitroids.Game
 
             XmlDocument levelConfig = new XmlDocument();
             levelConfig.Load(HttpContext.Current.Server.MapPath("/Levels/Levels.xml"));
-            XmlNode level = levelConfig.DocumentElement.ChildNodes[levelNumber];
-            this.Level = level;
-            
+            this.Level = levelConfig.DocumentElement.ChildNodes[levelNumber];
+
+            this.SunAngle = Math.PI;
+            this.SunRot = Convert.ToDouble((from XmlNode node in this.Level.ChildNodes
+                                            where node.Name == "SunRot"
+                                            select node).First().InnerText);
+
             SetPlanets();
 
             int barycenterMass = 0;
@@ -41,6 +45,10 @@ namespace Orbitroids.Game
             this.SetNewWave();
         }
 
+        public DateTime LastUpdate { get; set; }
+        public double Timespan { get; set; }
+        public double SunRot { get; set; }
+        public double SunAngle { get; set; }
         public XmlNode Level { get; private set; }
         public List<Planet> Planets { get; set; }
         public List<Asteroid> Asteroids { get; set; }
@@ -90,7 +98,6 @@ namespace Orbitroids.Game
                     vel = Physics.GetOrbitalVelocity(new Coordinate(0, spread), this.Barycenter);
                     vel = vel * dist / spread;
                 }
-
                 this.Planets.Add(new Planet(mass, radius, VecCirc(forwardAngle, vel, coord), color, atmosphere));
             }
         }
@@ -129,13 +136,10 @@ namespace Orbitroids.Game
 
             for (int i = 0; i < number; i++)
             {
-                this.Asteroids.Add(new Asteroid(rand, VecCirc(), 50));
-                
                 double forwardAngle = i * 2 * Math.PI / number - Math.PI / 2;
                 IMassive parentBody = parent == 0 ? this.Barycenter : this.Planets[parent - 1];
                 Vector distVec = VecCirc(i * 2 * Math.PI / number, altitude, parentBody.Vel.Origin);
-                this.Asteroids.Last().Vel = VecCirc(forwardAngle, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head);
-                this.Asteroids.Last().DeltaRot = (rand.NextDouble() - .5) / 10;
+                this.Asteroids.Add(new Asteroid(rand, VecCirc(forwardAngle, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head), 50, .5, "#808080", (rand.NextDouble() - .5) / 200));
             }
         }
 
@@ -155,7 +159,7 @@ namespace Orbitroids.Game
                 {
                     asteroid.ApplyGravity(planet);
                 }
-                asteroid.ApplyMotion();
+                asteroid.ApplyMotion(this.Timespan);
             }
         }
 
@@ -167,7 +171,7 @@ namespace Orbitroids.Game
                 {
                     shot.ApplyGravity(planet);
                 }
-                shot.ApplyMotion();
+                shot.ApplyMotion(this.Timespan);
             }
         }
 
@@ -180,7 +184,7 @@ namespace Orbitroids.Game
                     if (!ReferenceEquals(planet, otherPlanet))
                         planet.ApplyGravity(otherPlanet);
                 }
-                planet.ApplyMotion();
+                planet.ApplyMotion(this.Timespan);
             }
         }
 
@@ -193,7 +197,6 @@ namespace Orbitroids.Game
                     ship.Vel = null;
                     continue;
                 }
-
                 foreach (Planet planet in this.Planets)
                 {
                     ship.ApplyGravity(planet);
@@ -206,9 +209,9 @@ namespace Orbitroids.Game
                         ship.Burn(ship.BurnPower);
                 }
                 if (ship.Loaded)
-                    this.Shots.Add(ship.Shoot());
+                    this.Shots.Add(ship.Shoot(this.Timespan));
 
-                ship.ApplyMotion();
+                ship.ApplyMotion(this.Timespan);
             }
         }
 
@@ -220,14 +223,17 @@ namespace Orbitroids.Game
             }
         }
 
-        private void destroyAsteroids(IEnumerable<Asteroid> asteroids)
+        private void destroyAsteroids(IEnumerable<Asteroid> asteroids, bool split)
         {
             foreach (Asteroid asteroid in asteroids)
             {
                 this.Asteroids.Remove(asteroid);
-                Asteroid[] newAsteroids = splitAsteroid(asteroid, 3, 50);
-                if (newAsteroids != null)
-                    this.Asteroids.AddRange(newAsteroids);
+                if (split)
+                {
+                    Asteroid[] newAsteroids = splitAsteroid(asteroid, 3, 100);
+                    if (newAsteroids != null)
+                        this.Asteroids.AddRange(newAsteroids);
+                }
             }
         }
 
@@ -239,12 +245,13 @@ namespace Orbitroids.Game
                 double remainingArea = asteroidArea;
                 Asteroid[] newAsteroids = new Asteroid[splits];
                 Random rand = new Random();
+                double randAngle = rand.NextDouble() * 2 * Math.PI;
                 for (int i = 0; i < splits; i++)
                 {
                     double area = rand.Next(1, 4) * .5 * remainingArea / (splits - i);
                     double angle = 2 * Math.PI / (splits - i);
-                    double speed = power / area;
-                    newAsteroids[i] = new Asteroid(rand, AddVectors(asteroid.Vel, VecCirc(angle, speed)), Math.Sqrt(area), asteroid.Roughness, asteroid.Color, (rand.NextDouble() - .5) / 10);
+                    double speed = power / (area * this.Timespan);
+                    newAsteroids[i] = new Asteroid(rand, AddVectors(asteroid.Vel, VecCirc(randAngle + angle, speed)), Math.Sqrt(area), asteroid.Roughness, asteroid.Color, (rand.NextDouble() - .5) / 200);
                     remainingArea -= area;
                 }
                 return newAsteroids;
@@ -262,6 +269,10 @@ namespace Orbitroids.Game
 
         public void Update()
         {
+            DateTime newUpdate = DateTime.UtcNow;
+            this.Timespan = newUpdate.Subtract(this.LastUpdate).TotalMilliseconds;
+            this.LastUpdate = newUpdate;
+            this.SunAngle += this.SunRot * this.Timespan;
             applyMotion();
             checkWave();
             Collisions.HandleCollisions(

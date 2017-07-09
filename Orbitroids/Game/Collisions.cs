@@ -10,7 +10,7 @@ namespace Orbitroids.Game
     public static class Collisions
     {
         public delegate void DestroyShots(IEnumerable<Shot> shots);
-        public delegate void DestroyAsteroids(IEnumerable<Asteroid> asteroids);
+        public delegate void DestroyAsteroids(IEnumerable<Asteroid> asteroids, bool split);
         public delegate void DestroyShips(IEnumerable<Ship> ships);
 
         public static void HandleCollisions(IEnumerable<Shot> shots, IEnumerable<Asteroid> asteroids, IEnumerable<Planet> planets, IEnumerable<Ship> ships, IMassive barycenter, DestroyShots destroyShots, DestroyShips destroyShips, DestroyAsteroids destroyAsteroids, int maxShots, int maxAsteroids)
@@ -51,7 +51,7 @@ namespace Orbitroids.Game
                     doomedAsteroids.Add(asteroid);
                 }
             }
-            destroyAsteroids(doomedAsteroids);
+            destroyAsteroids(doomedAsteroids, false);
         }
 
         private static void CheckShipEscaped(IEnumerable<Ship> ships, DestroyShips destroyShips)
@@ -87,7 +87,7 @@ namespace Orbitroids.Game
                 }
             }
             destroyShots(doomedShots);
-            destroyAsteroids(doomedAsteroids);
+            destroyAsteroids(doomedAsteroids, true);
         }
 
         public static void CheckShotShipCollision(IEnumerable<Shot> shots, IEnumerable<Ship> ships, DestroyShots destroyShots, DestroyShips destroyShips) // 50 * 4 = 200 / 2082
@@ -146,7 +146,7 @@ namespace Orbitroids.Game
                     }
                 }
             }
-            destroyAsteroids(doomedAsteroids);
+            destroyAsteroids(doomedAsteroids, true);
             destroyShips(doomedShips);
         }
 
@@ -163,7 +163,7 @@ namespace Orbitroids.Game
                     }
                 }
             }
-            destroyAsteroids(doomedAsteroids);
+            destroyAsteroids(doomedAsteroids, true);
         }
 
         public static void CheckShipPlanetCollision(IEnumerable<Ship> ships, IEnumerable<Planet> planets, DestroyShips destroyShips) // 4 * 3 = 12 / 2082
