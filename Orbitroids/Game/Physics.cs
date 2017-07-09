@@ -19,7 +19,7 @@ namespace Orbitroids.Game
         public static double GetOrbitalVelocity(Coordinate coord, IMassive body)
         {
             double dist = VecCart(coord, body.Vel.Origin).Length;
-            return dist == 0 ? 0 : Math.Sqrt(body.Mass / dist) / 4;
+            return dist == 0 ? 0 : Math.Sqrt(body.Mass / dist);
         }
     }
 }
