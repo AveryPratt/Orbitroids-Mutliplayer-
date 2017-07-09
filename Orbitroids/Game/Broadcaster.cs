@@ -12,7 +12,7 @@ namespace Orbitroids.Game
     public class Broadcaster
     {
         private readonly static Lazy<Broadcaster> instance = new Lazy<Broadcaster>(() => new Broadcaster());
-        private readonly TimeSpan broadcastInterval = TimeSpan.FromMilliseconds(16); // 62.5 fps
+        private readonly TimeSpan broadcastInterval = TimeSpan.FromMilliseconds(1); // 62.5 fps
         private readonly IHubContext hubContext;
         private Timer broadcastLoop;
         private Engine model;

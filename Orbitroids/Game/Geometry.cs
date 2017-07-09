@@ -71,14 +71,14 @@ namespace Orbitroids.Game
             public string IsRotating { get; set; }
             public double RotPower { get; set; }
 
-            protected void Rotate()
+            protected void Rotate(double timespan)
             {
                 if (this.IsRotating == "right")
                     this.AccelRot -= this.RotPower;
                 else if (this.IsRotating == "left")
                     this.AccelRot += this.RotPower;
 
-                this.ForwardAngle += DeltaRot;
+                this.ForwardAngle += DeltaRot * timespan;
             }
         }
         
@@ -98,6 +98,15 @@ namespace Orbitroids.Game
             public Coordinate Head { get; set; }
             public Coordinate Delta { get; set; }
             public double Length { get; set; }
+
+            public static Vector Extend(Vector vec, double mult)
+            {
+                return VecDelta(
+                    new Coordinate(vec.Delta.X * mult, vec.Delta.Y * mult),
+                    new Coordinate(vec.Origin.X, vec.Origin.Y),
+                    vec.DeltaRot
+                    );
+            }
         }
 
         public static Vector VecCart(Coordinate head, Coordinate origin = null, double deltaRot = 0)
@@ -178,11 +187,11 @@ namespace Orbitroids.Game
             {
                 this.Accel = AddVectors(this.Accel, accel);
             }
-            public void ApplyMotion()
+            public void ApplyMotion(double timespan)
             {
-                this.Rotate();
+                this.Rotate(timespan);
                 this.Vel = AddVectors(this.Vel, this.Accel);
-                this.Vel = VecDelta(this.Vel.Delta, this.Vel.Head, this.Vel.DeltaRot);
+                this.Vel = Vector.Extend(this.Vel, timespan);
                 this.Accel = new Vector();
                 this.AccelRot = 0;
             }

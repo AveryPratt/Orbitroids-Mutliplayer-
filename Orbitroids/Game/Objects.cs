@@ -100,7 +100,7 @@ namespace Orbitroids.Game
                     VecCirc(this.ForwardAngle - 5 * Math.PI / 6, this.Radius, this.Vel.Origin)
                 };
             }
-            new protected void Rotate()
+            new protected void Rotate(double timespan)
             {
                 double maxRotPower = this.RotPower;
 
@@ -141,13 +141,13 @@ namespace Orbitroids.Game
                     this.DeltaRot += this.AccelRot;
                 }
 
-                this.ForwardAngle += this.DeltaRot;
+                this.ForwardAngle += this.DeltaRot * timespan;
             }
-            new public void ApplyMotion()
+            new public void ApplyMotion(double timespan)
             {
-                this.Rotate();
+                this.Rotate(timespan);
                 this.Vel = AddVectors(this.Vel, this.Accel);
-                this.Vel = VecDelta(this.Vel.Delta, this.Vel.Head, this.Vel.DeltaRot);
+                this.Vel = Vector.Extend(this.Vel, timespan);
                 this.Accel = new Vector();
                 this.AccelRot = 0;
                 this.TrueAnomaly = VecCart(this.Vel.Origin, new Coordinate());
@@ -216,9 +216,9 @@ namespace Orbitroids.Game
             public double Roughness { get; set; }
             public IEnumerable<Vector> Arms { get; set; }
             
-            new public void ApplyMotion()
+            new public void ApplyMotion(double timespan)
             {
-                base.ApplyMotion();
+                base.ApplyMotion(timespan);
                 this.AlignPoints();
             }
             public IEnumerable<Vector> ConstructSides()

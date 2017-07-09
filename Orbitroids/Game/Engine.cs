@@ -45,6 +45,8 @@ namespace Orbitroids.Game
             this.SetNewWave();
         }
 
+        public DateTime LastUpdate { get; set; }
+        public double Timespan { get; set; }
         public double SunRot { get; set; }
         public double SunAngle { get; set; }
         public XmlNode Level { get; private set; }
@@ -161,7 +163,7 @@ namespace Orbitroids.Game
                 {
                     asteroid.ApplyGravity(planet);
                 }
-                asteroid.ApplyMotion();
+                asteroid.ApplyMotion(this.Timespan);
             }
         }
 
@@ -173,7 +175,7 @@ namespace Orbitroids.Game
                 {
                     shot.ApplyGravity(planet);
                 }
-                shot.ApplyMotion();
+                shot.ApplyMotion(this.Timespan);
             }
         }
 
@@ -186,7 +188,7 @@ namespace Orbitroids.Game
                     if (!ReferenceEquals(planet, otherPlanet))
                         planet.ApplyGravity(otherPlanet);
                 }
-                planet.ApplyMotion();
+                planet.ApplyMotion(this.Timespan);
             }
         }
 
@@ -214,7 +216,7 @@ namespace Orbitroids.Game
                 if (ship.Loaded)
                     this.Shots.Add(ship.Shoot());
 
-                ship.ApplyMotion();
+                ship.ApplyMotion(this.Timespan);
             }
         }
 
@@ -272,7 +274,11 @@ namespace Orbitroids.Game
 
         public void Update()
         {
-            this.SunAngle += this.SunRot;
+            DateTime now = DateTime.UtcNow;
+            this.Timespan = now.Subtract(this.LastUpdate).TotalMilliseconds;
+            this.LastUpdate = now;
+
+            this.SunAngle += this.SunRot * this.Timespan;
             applyMotion();
             checkWave();
             Collisions.HandleCollisions(
