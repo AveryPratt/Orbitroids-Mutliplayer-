@@ -131,7 +131,7 @@ namespace Orbitroids.Game
                     }
                 }
                 else
-                    maxRotPower = .2;
+                    maxRotPower = .01;
 
                 if (this.IsRotating == "right")
                     this.AccelRot = -this.RotPower;
@@ -164,7 +164,7 @@ namespace Orbitroids.Game
             public Shot Shoot(double timespan)
             {
                 this.Loaded = false;
-                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, this.ShotPower / timespan));
+                this.Accel = AddVectors(this.Accel, VecCirc(this.ForwardAngle - Math.PI, this.ShotPower / 4));
                 Vector projection = VecCirc(this.ForwardAngle, this.ShotPower, this.Arms.ToArray()[0].Head);
                 projection = AddVectors(projection, this.Vel);
                 return new Shot(projection);
