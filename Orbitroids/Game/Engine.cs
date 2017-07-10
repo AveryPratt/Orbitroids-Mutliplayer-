@@ -163,7 +163,7 @@ namespace Orbitroids.Game
                 {
                     asteroid.ApplyGravity(planet);
                 }
-                asteroid.ApplyMotion(this.Timespan);
+                asteroid.ApplyMotion();
             }
         }
 
@@ -175,7 +175,7 @@ namespace Orbitroids.Game
                 {
                     shot.ApplyGravity(planet);
                 }
-                shot.ApplyMotion(this.Timespan);
+                shot.ApplyMotion();
             }
         }
 
@@ -188,7 +188,7 @@ namespace Orbitroids.Game
                     if (!ReferenceEquals(planet, otherPlanet))
                         planet.ApplyGravity(otherPlanet);
                 }
-                planet.ApplyMotion(this.Timespan);
+                planet.ApplyMotion();
             }
         }
 
@@ -216,7 +216,7 @@ namespace Orbitroids.Game
                 if (ship.Loaded)
                     this.Shots.Add(ship.Shoot());
 
-                ship.ApplyMotion(this.Timespan);
+                ship.ApplyMotion();
             }
         }
 
@@ -275,23 +275,25 @@ namespace Orbitroids.Game
         public void Update()
         {
             DateTime now = DateTime.UtcNow;
-            this.Timespan = now.Subtract(this.LastUpdate).TotalMilliseconds;
+            if (this.LastUpdate != null)
+            {
+                this.Timespan = now.Subtract(this.LastUpdate).TotalMilliseconds;
+                this.SunAngle += this.SunRot;
+                applyMotion();
+                checkWave();
+                Collisions.HandleCollisions(
+                    this.Shots,
+                    this.Asteroids,
+                    this.Planets,
+                    this.Ships,
+                    this.Barycenter,
+                    this.destroyShots,
+                    this.destroyShips,
+                    this.destroyAsteroids,
+                    this.MaxShots,
+                    this.MaxAsteroids);
+            }
             this.LastUpdate = now;
-
-            this.SunAngle += this.SunRot * this.Timespan;
-            applyMotion();
-            checkWave();
-            Collisions.HandleCollisions(
-                this.Shots,
-                this.Asteroids,
-                this.Planets,
-                this.Ships,
-                this.Barycenter,
-                this.destroyShots,
-                this.destroyShips,
-                this.destroyAsteroids,
-                this.MaxShots,
-                this.MaxAsteroids);
         }
 
         private void checkWave()
