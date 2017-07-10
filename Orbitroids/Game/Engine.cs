@@ -137,13 +137,10 @@ namespace Orbitroids.Game
 
             for (int i = 0; i < number; i++)
             {
-                this.Asteroids.Add(new Asteroid(rand, VecCirc(), 50));
-                
                 double forwardAngle = i * 2 * Math.PI / number - Math.PI / 2;
                 IMassive parentBody = parent == 0 ? this.Barycenter : this.Planets[parent - 1];
                 Vector distVec = VecCirc(i * 2 * Math.PI / number, altitude, parentBody.Vel.Origin);
-                this.Asteroids.Last().Vel = VecCirc(forwardAngle, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head);
-                this.Asteroids.Last().DeltaRot = (rand.NextDouble() - .5) / 10;
+                this.Asteroids.Add(new Asteroid(rand, VecCirc(forwardAngle, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head), 50, deltaRot: (rand.NextDouble() - .5) * Math.PI / 2));
             }
         }
 
@@ -209,12 +206,12 @@ namespace Orbitroids.Game
                 if (ship.Burning)
                 {
                     if (ship.DampenBurn)
-                        ship.Burn(ship.DampenBurnPower);
+                        ship.Burn(ship.DampenBurnPower * this.Timespan / 1000);
                     else
-                        ship.Burn(ship.BurnPower);
+                        ship.Burn(ship.BurnPower * this.Timespan / 1000);
                 }
                 if (ship.Loaded)
-                    this.Shots.Add(ship.Shoot());
+                    this.Shots.Add(ship.Shoot(this.Timespan));
 
                 ship.ApplyMotion(this.Timespan);
             }
@@ -255,8 +252,8 @@ namespace Orbitroids.Game
                 {
                     double area = rand.Next(1, 4) * .5 * remainingArea / (splits - i);
                     double angle = 2 * Math.PI / (splits - i);
-                    double speed = power / area;
-                    newAsteroids[i] = new Asteroid(rand, AddVectors(asteroid.Vel, VecCirc(randAngle + angle, speed)), Math.Sqrt(area), asteroid.Roughness, asteroid.Color, (rand.NextDouble() - .5) / 10);
+                    double speed = power * this.Timespan / area;
+                    newAsteroids[i] = new Asteroid(rand, AddVectors(asteroid.Vel, VecCirc(randAngle + angle, speed)), Math.Sqrt(area), asteroid.Roughness, asteroid.Color, (rand.NextDouble() - .5) * Math.PI / 2);
                     remainingArea -= area;
                 }
                 return newAsteroids;
