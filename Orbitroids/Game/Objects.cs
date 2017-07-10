@@ -216,9 +216,9 @@ namespace Orbitroids.Game
             public double Roughness { get; set; }
             public IEnumerable<Vector> Arms { get; set; }
             
-            new public void ApplyMotion()
+            new public void ApplyMotion(double timespan)
             {
-                base.ApplyMotion();
+                base.ApplyMotion(timespan);
                 this.AlignPoints();
             }
             public IEnumerable<Vector> ConstructSides()

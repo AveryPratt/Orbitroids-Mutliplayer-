@@ -71,14 +71,14 @@ namespace Orbitroids.Game
             public string IsRotating { get; set; }
             public double RotPower { get; set; }
 
-            protected void Rotate()
+            protected void Rotate(double timespan)
             {
                 if (this.IsRotating == "right")
                     this.AccelRot -= this.RotPower;
                 else if (this.IsRotating == "left")
                     this.AccelRot += this.RotPower;
 
-                this.ForwardAngle += DeltaRot;
+                this.ForwardAngle += DeltaRot * timespan;
             }
         }
         
@@ -178,9 +178,9 @@ namespace Orbitroids.Game
             {
                 this.Accel = AddVectors(this.Accel, accel);
             }
-            public void ApplyMotion()
+            public void ApplyMotion(double timespan)
             {
-                this.Rotate();
+                this.Rotate(timespan);
                 this.Vel = AddVectors(this.Vel, this.Accel);
                 this.Vel = VecDelta(this.Vel.Delta, this.Vel.Head, this.Vel.DeltaRot);
                 this.Accel = new Vector();

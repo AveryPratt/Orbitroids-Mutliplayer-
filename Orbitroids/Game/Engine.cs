@@ -163,7 +163,7 @@ namespace Orbitroids.Game
                 {
                     asteroid.ApplyGravity(planet);
                 }
-                asteroid.ApplyMotion();
+                asteroid.ApplyMotion(this.Timespan);
             }
         }
 
@@ -175,7 +175,7 @@ namespace Orbitroids.Game
                 {
                     shot.ApplyGravity(planet);
                 }
-                shot.ApplyMotion();
+                shot.ApplyMotion(this.Timespan);
             }
         }
 
@@ -188,7 +188,7 @@ namespace Orbitroids.Game
                     if (!ReferenceEquals(planet, otherPlanet))
                         planet.ApplyGravity(otherPlanet);
                 }
-                planet.ApplyMotion();
+                planet.ApplyMotion(this.Timespan);
             }
         }
 
@@ -216,7 +216,7 @@ namespace Orbitroids.Game
                 if (ship.Loaded)
                     this.Shots.Add(ship.Shoot());
 
-                ship.ApplyMotion();
+                ship.ApplyMotion(this.Timespan);
             }
         }
 
@@ -275,7 +275,7 @@ namespace Orbitroids.Game
         public void Update()
         {
             DateTime now = DateTime.UtcNow;
-            if (this.LastUpdate != null)
+            if (this.LastUpdate.Ticks != 0)
             {
                 this.Timespan = now.Subtract(this.LastUpdate).TotalMilliseconds;
                 this.SunAngle += this.SunRot;
