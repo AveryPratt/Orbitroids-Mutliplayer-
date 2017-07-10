@@ -146,7 +146,7 @@ namespace Orbitroids.Game
             new public void ApplyMotion(double timespan)
             {
                 this.Rotate(timespan);
-                this.Vel = AddVectors(this.Vel, this.Accel);
+                this.Vel = AddVectors(this.Vel, Vector.Extend(this.Accel, timespan));
                 Vector ext = Vector.Extend(this.Vel, timespan / 1000);
                 this.Vel = VecDelta(this.Vel.Delta, ext.Head, this.Vel.DeltaRot);
                 this.Accel = new Vector();

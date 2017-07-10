@@ -118,7 +118,7 @@ namespace Orbitroids.Game
             
             IMassive parentBody = parent == 0 ? this.Barycenter : this.Planets[parent - 1];
             Vector distVec = VecCirc(Math.PI, altitude, parentBody.Vel.Origin);
-            this.Ships[0].Vel = VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head);
+            this.Ships[0].Vel = Vector.Extend(VecCirc(Math.PI / 2, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head), this.Timespan);
             this.Ships[0].DeltaRot = 0;
             this.Ships[0].ForwardAngle = 0;
         }
@@ -140,7 +140,8 @@ namespace Orbitroids.Game
                 double forwardAngle = i * 2 * Math.PI / number - Math.PI / 2;
                 IMassive parentBody = parent == 0 ? this.Barycenter : this.Planets[parent - 1];
                 Vector distVec = VecCirc(i * 2 * Math.PI / number, altitude, parentBody.Vel.Origin);
-                this.Asteroids.Add(new Asteroid(rand, VecCirc(forwardAngle, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head), 50, deltaRot: (rand.NextDouble() - .5) * Math.PI / 2));
+                Vector vel = VecCirc(forwardAngle, Physics.GetOrbitalVelocity(distVec.Head, parentBody), distVec.Head);
+                this.Asteroids.Add(new Asteroid(rand, Vector.Extend(vel, this.Timespan), 50, deltaRot: (rand.NextDouble() - .5) * Math.PI / 2));
             }
         }
 
